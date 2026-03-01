@@ -26,12 +26,17 @@ export const DEFAULT_LANDMARKS = {
   [FACE_REGIONS.T_ZONE]: { x: 0.5, y: 0.35 }
 };
 
+export interface SensorData {
+  moisture: number;
+  sebum: number;
+}
+
 // Default hydration values (initial state)
-export const INITIAL_HYDRATION_DATA = {
-  [FACE_REGIONS.FOREHEAD]: 0,
-  [FACE_REGIONS.LEFT_CHEEK]: 0,
-  [FACE_REGIONS.RIGHT_CHEEK]: 0,
-  [FACE_REGIONS.CHIN]: 0,
-  [FACE_REGIONS.NOSE]: 0,
-  [FACE_REGIONS.T_ZONE]: 0
+export const INITIAL_HYDRATION_DATA: Record<string, SensorData> = {
+  [FACE_REGIONS.FOREHEAD]: { moisture: 0, sebum: 0 },
+  [FACE_REGIONS.LEFT_CHEEK]: { moisture: 0, sebum: 0 },
+  [FACE_REGIONS.RIGHT_CHEEK]: { moisture: 0, sebum: 0 },
+  [FACE_REGIONS.CHIN]: { moisture: 0, sebum: 0 },
+  [FACE_REGIONS.NOSE]: { moisture: 0, sebum: 0 },
+  [FACE_REGIONS.T_ZONE]: { moisture: 0, sebum: 0 }
 };

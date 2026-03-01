@@ -1,11 +1,16 @@
 import { useState, useCallback, useRef } from 'react';
-import { FACE_REGIONS } from '../utils/constants';
+
+export interface MeasurementData {
+    moisture: number;
+    sebum: number;
+}
 
 export const useBluetoothDevice = () => {
     const [device, setDevice] = useState<any>(null);
     const [isConnecting, setIsConnecting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [measurementData, setMeasurementData] = useState<any>(null);
+    // measurementData: 순차적 측정 방식이므로 단순히 받아온 수분 '수치값'만 전달
+    const [measurementData, setMeasurementData] = useState<MeasurementData | null>(null);
     const [isSimulating, setIsSimulating] = useState(false);
     const simIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -47,17 +52,16 @@ export const useBluetoothDevice = () => {
         if (simIntervalRef.current) return;
 
         setIsSimulating(true);
-        const regions = Object.values(FACE_REGIONS);
 
         simIntervalRef.current = setInterval(() => {
-            const randomRegion = regions[Math.floor(Math.random() * regions.length)];
-            const randomValue = Math.floor(Math.random() * 40) + 40; // 40-80% range
+            // 버튼 클릭 시 들어오는 임의의 수분도 및 유분도 (20~80%)
+            const randomMoisture = Math.floor(Math.random() * 60) + 20;
+            const randomSebum = Math.floor(Math.random() * 60) + 20;
 
-            setMeasurementData({
-                region: randomRegion,
-                value: randomValue
-            });
-        }, 2000); // 2 seconds interval
+            // To simulate a one-time button press event that React can always detect even if value is same,
+            // we will just set the object. The Dashboard should reset this to null after handling it.
+            setMeasurementData({ moisture: randomMoisture, sebum: randomSebum });
+        }, 3000); // 3 seconds interval
     }, []);
 
     const stopSimulation = useCallback(() => {
@@ -76,5 +80,5 @@ export const useBluetoothDevice = () => {
         setDevice(null);
     }, [device, stopSimulation]);
 
-    return { connect, disconnect, device, isConnecting, error, measurementData, isSimulating };
+    return { connect, disconnect, device, isConnecting, error, measurementData, setMeasurementData, isSimulating };
 };

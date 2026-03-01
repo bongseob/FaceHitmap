@@ -23,7 +23,7 @@ const HeatmapCanvas: React.FC<HeatmapCanvasProps> = ({ landmarks, hydrationData,
 
         // Draw landmarks with heatmap colors based on hydrationData
         Object.entries(landmarks).forEach(([region, point]: [string, any]) => {
-            const value = hydrationData[region] || 0;
+            const value = hydrationData[region]?.moisture || 0;
 
             ctx.beginPath();
             ctx.arc(point.x * width, point.y * height, 20, 0, 2 * Math.PI);

@@ -2,13 +2,13 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Download, RefreshCw, CheckCircle2, Sparkles, Beaker, Activity, BrainCircuit } from 'lucide-react';
-import { REGION_COLORS, FACE_REGIONS, DEFAULT_LANDMARKS } from '../utils/constants';
+import { REGION_COLORS, FACE_REGIONS, DEFAULT_LANDMARKS, SensorData } from '../utils/constants';
 import { getRecommendedIngredients } from '../utils/recommendations';
 import { getAIRecommendation } from '../services/GeminiService';
 
 interface ReportViewProps {
     landmarks: any;
-    hydrationData: Record<string, number>;
+    hydrationData: Record<string, SensorData>;
     faceType: string | null;
     onReset: () => void;
 }
@@ -19,7 +19,11 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
 
     const hydrationValues = Object.values(hydrationData);
     const averageHydration = hydrationValues.length > 0
-        ? Math.round(hydrationValues.reduce((a, b) => a + b, 0) / hydrationValues.length)
+        ? Math.round(hydrationValues.reduce((acc, curr) => acc + curr.moisture, 0) / hydrationValues.length)
+        : 0;
+
+    const averageSebum = hydrationValues.length > 0
+        ? Math.round(hydrationValues.reduce((acc, curr) => acc + curr.sebum, 0) / hydrationValues.length)
         : 0;
 
     const recommendedIngredients = getRecommendedIngredients(hydrationData);
@@ -61,85 +65,129 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
             return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${alpha})`;
         };
 
-        // 1. Draw Background Mask (Silhouette)
-        ctx.fillStyle = '#0f172a';
+        const drawOverlaysAndHeatmap = () => {
+            // 2. Draw Thermal Heatmap (Smooth continuous gradients)
+            // We draw multiple overlapping radial gradients
+            Object.entries(drawingLandmarks).forEach(([region, point]: [string, any]) => {
+                const x = point.x * width;
+                const y = point.y * height;
+                // 배경 히트맵 컬러는 직관적인 '수분' 베이스로 그립니다
+                const value = hydrationData[region]?.moisture || (landmarks ? 0 : 50);
+
+                const radius = 100; // Larger radius for more overlap
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
+                grad.addColorStop(0, getThermalColor(value, 0.6));
+                grad.addColorStop(0.6, getThermalColor(value, 0.2));
+                grad.addColorStop(1, getThermalColor(value, 0));
+
+                ctx.globalCompositeOperation = 'screen';
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+
+            // Restore from clipping to draw UI overlays perfectly
+            ctx.restore();
+
+            // 3. Draw UI Overlay (Labels and Lines)
+            ctx.globalCompositeOperation = 'source-over';
+
+            // Points
+            Object.entries(drawingLandmarks).forEach(([region, point]: [string, any]) => {
+                const x = point.x * width;
+                const y = point.y * height;
+
+                // Small crosshair
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(x - 5, y); ctx.lineTo(x + 5, y);
+                ctx.moveTo(x, y - 5); ctx.lineTo(x, y + 5);
+                ctx.stroke();
+
+                // Simple circle
+                ctx.beginPath();
+                ctx.arc(x, y, 2, 0, 2 * Math.PI);
+                ctx.fillStyle = 'cyan';
+                ctx.fill();
+            });
+
+            // 4. Color Scale Bar
+            const scaleX = width - 25;
+            const scaleY = height * 0.2;
+            const scaleWidth = 8;
+            const scaleHeight = height * 0.6;
+
+            const scaleGradient = ctx.createLinearGradient(0, scaleY + scaleHeight, 0, scaleY);
+            scaleGradient.addColorStop(0, getThermalColor(0));
+            scaleGradient.addColorStop(0.25, getThermalColor(25));
+            scaleGradient.addColorStop(0.5, getThermalColor(50));
+            scaleGradient.addColorStop(0.75, getThermalColor(75));
+            scaleGradient.addColorStop(1, getThermalColor(100));
+
+            ctx.fillStyle = scaleGradient;
+            ctx.fillRect(scaleX, scaleY, scaleWidth, scaleHeight);
+
+            ctx.fillStyle = '#64748b';
+            ctx.font = '8px Monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText('100%', scaleX - 5, scaleY + 5);
+            ctx.fillText('0%', scaleX - 5, scaleY + scaleHeight);
+        };
+
+        // 1. Create Clipping Mask for the Template
+        ctx.save();
         ctx.beginPath();
-        ctx.ellipse(width / 2, height * 0.48, width * 0.35, height * 0.42, 0, 0, 2 * Math.PI);
-        ctx.fill();
 
-        // 2. Draw Thermal Heatmap (Smooth continuous gradients)
-        // We draw multiple overlapping radial gradients
-        Object.entries(drawingLandmarks).forEach(([region, point]: [string, any]) => {
-            const x = point.x * width;
-            const y = point.y * height;
-            const value = hydrationData[region] || (landmarks ? 0 : 50); // Use 50 as dummy for template if no real data
+        const centerX = width / 2;
+        const centerY = height * 0.50;
 
-            const radius = 100; // Larger radius for more overlap
-            const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
-            grad.addColorStop(0, getThermalColor(value, 0.6));
-            grad.addColorStop(0.6, getThermalColor(value, 0.2));
-            grad.addColorStop(1, getThermalColor(value, 0));
+        // Determine ellipse size based on faceType
+        let radiusX = width * 0.35;
+        let radiusY = height * 0.40;
 
-            ctx.globalCompositeOperation = 'screen';
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(x, y, radius, 0, 2 * Math.PI);
-            ctx.fill();
-        });
+        if (faceType === 'Round / Square') {
+            radiusX = width * 0.38;
+            radiusY = height * 0.38;
+        } else if (faceType === 'Long / Oval') {
+            radiusX = width * 0.30;
+            radiusY = height * 0.43;
+        }
 
-        // 3. Draw UI Overlay (Labels and Lines)
+        ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
+        ctx.clip(); // Limit all subsequent drawings to this path!
+
+        // Draw Base Outline Graphic Background inside map
         ctx.globalCompositeOperation = 'source-over';
 
-        // Subtle Face Outline
-        ctx.strokeStyle = '#ffffff15';
+        // Dark Base Color for the Face Form
+        ctx.fillStyle = '#1e293b';
+        ctx.fill();
+
+        // Add some technical wireframe / outline accents
+        ctx.strokeStyle = '#334155';
         ctx.lineWidth = 1;
+
+        // Vertical Center Line
         ctx.beginPath();
-        ctx.ellipse(width / 2, height * 0.48, width * 0.35, height * 0.42, 0, 0, 2 * Math.PI);
+        ctx.moveTo(centerX, centerY - radiusY);
+        ctx.lineTo(centerX, centerY + radiusY);
         ctx.stroke();
 
-        // Points
-        Object.entries(drawingLandmarks).forEach(([region, point]: [string, any]) => {
-            const x = point.x * width;
-            const y = point.y * height;
-
-            // Small crosshair
-            ctx.strokeStyle = 'white';
-            ctx.lineWidth = 0.5;
+        // Horizontal Grid Lines
+        for (let i = 1; i <= 5; i++) {
+            const yOffset = centerY - radiusY + (radiusY * 2 * (i / 6));
             ctx.beginPath();
-            ctx.moveTo(x - 5, y); ctx.lineTo(x + 5, y);
-            ctx.moveTo(x, y - 5); ctx.lineTo(x, y + 5);
+            ctx.moveTo(centerX - radiusX, yOffset);
+            ctx.lineTo(centerX + radiusX, yOffset);
             ctx.stroke();
+        }
 
-            // Simple circle
-            ctx.beginPath();
-            ctx.arc(x, y, 2, 0, 2 * Math.PI);
-            ctx.fillStyle = 'cyan';
-            ctx.fill();
-        });
+        // Draw Heatmap and Overlays (which will naturally be masked inside the face)
+        drawOverlaysAndHeatmap();
 
-        // 4. Color Scale Bar
-        const scaleX = width - 25;
-        const scaleY = height * 0.2;
-        const scaleWidth = 8;
-        const scaleHeight = height * 0.6;
-
-        const scaleGradient = ctx.createLinearGradient(0, scaleY + scaleHeight, 0, scaleY);
-        scaleGradient.addColorStop(0, getThermalColor(0));
-        scaleGradient.addColorStop(0.25, getThermalColor(25));
-        scaleGradient.addColorStop(0.5, getThermalColor(50));
-        scaleGradient.addColorStop(0.75, getThermalColor(75));
-        scaleGradient.addColorStop(1, getThermalColor(100));
-
-        ctx.fillStyle = scaleGradient;
-        ctx.fillRect(scaleX, scaleY, scaleWidth, scaleHeight);
-
-        ctx.fillStyle = '#64748b';
-        ctx.font = '8px Monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText('100%', scaleX - 5, scaleY + 5);
-        ctx.fillText('0%', scaleX - 5, scaleY + scaleHeight);
-
-    }, [landmarks, hydrationData]);
+    }, [landmarks, hydrationData, faceType]);
 
     return (
         <div className="fixed inset-0 bg-[#0b121ecf] backdrop-blur-md z-50 flex items-center justify-center p-2 md:p-4 overflow-hidden">
@@ -157,7 +205,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                             ref={canvasRef}
                             width={320}
                             height={360}
-                            className="w-full h-full object-cover"
+                            className="w-full h-auto max-h-[400px] object-contain"
                         />
                         <div className="absolute top-4 right-10 text-[8px] text-white/50 font-mono text-right pointer-events-none">
                             THERMAL_ID: SC-029<br />
@@ -216,24 +264,46 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                     </div>
 
                     <div className="space-y-6 flex-grow">
-                        <div className="bg-[#1e293b]/40 p-6 lg:p-8 rounded-[1.5rem] border border-[#2d3a4f] relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-4 opacity-[0.03] rotate-12 pointer-events-none">
-                                <Activity size={100} />
+                        <div className="grid grid-cols-2 gap-4">
+                            {/* Average Moisture Card */}
+                            <div className="bg-[#1e293b]/40 p-5 rounded-[1.5rem] border border-[#2d3a4f] relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-4 opacity-[0.03] rotate-12 pointer-events-none">
+                                    <Activity size={80} />
+                                </div>
+                                <div className="flex flex-col mb-4 relative z-10">
+                                    <span className="text-[#94a3b8] text-[10px] font-bold uppercase tracking-[0.15em] mb-2">전체 평균 수분도</span>
+                                    <span className="text-4xl font-black text-[#22d3ee] tracking-tighter leading-none">{averageHydration}%</span>
+                                </div>
+                                <div className="w-full bg-[#0b121e] h-2 rounded-full overflow-hidden border border-white/[0.02]">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-[#2563eb] via-[#22d3ee] to-[#34d399] transition-all duration-1000 ease-out"
+                                        style={{ width: `${averageHydration}%` }}
+                                    />
+                                </div>
                             </div>
-                            <div className="flex justify-between items-end mb-4 relative z-10">
-                                <span className="text-[#94a3b8] text-[10px] font-bold uppercase tracking-[0.15em]">전체 평균 수분도</span>
-                                <span className="text-5xl font-black text-[#22d3ee] tracking-tighter leading-none">{averageHydration}%</span>
+
+                            {/* Average Sebum Card */}
+                            <div className="bg-[#1e293b]/40 p-5 rounded-[1.5rem] border border-[#2d3a4f] relative overflow-hidden">
+                                <div className="absolute top-0 left-0 p-4 opacity-[0.03] -rotate-12 pointer-events-none">
+                                    <Activity size={80} />
+                                </div>
+                                <div className="flex flex-col mb-4 relative z-10">
+                                    <span className="text-[#94a3b8] text-[10px] font-bold uppercase tracking-[0.15em] mb-2 text-right">전체 평균 유분도</span>
+                                    <span className="text-4xl font-black text-[#fbbf24] tracking-tighter leading-none text-right">{averageSebum}%</span>
+                                </div>
+                                <div className="w-full bg-[#0b121e] h-2 rounded-full overflow-hidden border border-white/[0.02]">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-[#b45309] via-[#f59e0b] to-[#fcd34d] transition-all duration-1000 ease-out ml-auto"
+                                        style={{ width: `${averageSebum}%` }}
+                                    />
+                                </div>
                             </div>
-                            <div className="w-full bg-[#0b121e] h-2 rounded-full overflow-hidden border border-white/[0.02]">
-                                <div
-                                    className="h-full bg-gradient-to-r from-[#2563eb] via-[#22d3ee] to-[#34d399] transition-all duration-1000 ease-out"
-                                    style={{ width: `${averageHydration}%` }}
-                                />
-                            </div>
-                            <p className="mt-4 text-[11px] text-[#64748b] leading-relaxed max-w-[90%]">
-                                분석 결과, 현재 수분도는 <span className="text-[#22d3ee] font-bold">{averageHydration}%</span>로 {averageHydration < 40 ? '수분 관리가 시급한' : '양호한'} 상태입니다.
-                            </p>
                         </div>
+
+                        <p className="text-[11px] text-[#64748b] leading-relaxed w-full bg-[#1e293b]/20 p-4 rounded-xl border border-[#2d3a4f]/50">
+                            분석 결과, 현재 수분도는 <span className="text-[#22d3ee] font-bold">{averageHydration}%</span>로 {averageHydration < 40 ? '관리가 시급하며' : '양호하며'}, 유분은 <span className="text-[#fbbf24] font-bold">{averageSebum}%</span>로 측정되어
+                            복합적인 {averageSebum > 60 && averageHydration < 40 ? '수분 부족 지성(수부지)' : averageSebum > 60 ? '지성 피부' : averageHydration < 40 ? '건성 피부' : '균형 잡힌 피부'} 타입으로 분석됩니다.
+                        </p>
 
                         <div className="grid grid-cols-2 gap-3 lg:gap-4">
                             {[
@@ -244,14 +314,23 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                 { label: 'NOSE', id: FACE_REGIONS.NOSE },
                                 { label: 'T ZONE', id: FACE_REGIONS.T_ZONE }
                             ].map((region) => {
-                                const value = hydrationData[region.id] || 0;
+                                const data = hydrationData[region.id] || { moisture: 0, sebum: 0 };
                                 return (
-                                    <div key={region.id} className="bg-[#1e293b]/30 p-5 rounded-xl border border-[#2d3a4f] transition-all group">
-                                        <div className="flex justify-between items-center mb-1">
+                                    <div key={region.id} className="bg-[#1e293b]/30 p-5 rounded-xl border border-[#2d3a4f] transition-all group flex flex-col justify-between">
+                                        <div className="flex justify-between items-center mb-3">
                                             <span className="text-[9px] text-[#475569] font-black uppercase tracking-widest">{region.label}</span>
-                                            <div className={`w-1.5 h-1.5 rounded-full ${value > 50 ? 'bg-[#22d3ee] shadow-[0_0_8px_#22d3ee]' : 'bg-[#f87171] shadow-[0_0_8px_#f87171]'}`} />
                                         </div>
-                                        <div className="text-xl lg:text-2xl font-mono font-black text-white">{value}%</div>
+                                        <div className="flex justify-between items-end w-full">
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] text-[#22d3ee]/60 font-bold mb-1">수분</span>
+                                                <div className="text-lg font-mono font-black text-white leading-none">{data.moisture}%</div>
+                                            </div>
+                                            <div className="h-6 w-px bg-[#2d3a4f]" /> {/* Divider */}
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[10px] text-[#fbbf24]/60 font-bold mb-1">유분</span>
+                                                <div className="text-lg font-mono font-black text-white leading-none">{data.sebum}%</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 );
                             })}

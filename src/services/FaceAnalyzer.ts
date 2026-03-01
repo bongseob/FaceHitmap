@@ -5,6 +5,12 @@ export interface SegmentedData {
     [key: string]: { x: number; y: number; z: number };
 }
 
+export interface FaceOvalData {
+    x: number;
+    y: number;
+    z: number;
+}
+
 export class FaceAnalyzer {
     private faceMesh: any = null;
 
@@ -30,7 +36,7 @@ export class FaceAnalyzer {
         });
     }
 
-    public async analyze(imageElement: HTMLImageElement | HTMLVideoElement): Promise<{ landmarks: any[], segmentedData: SegmentedData } | null> {
+    public async analyze(imageElement: HTMLImageElement | HTMLVideoElement): Promise<{ landmarks: any[], segmentedData: SegmentedData, faceOval: FaceOvalData[] } | null> {
         if (!this.faceMesh) return null;
 
         return new Promise((resolve) => {
@@ -42,7 +48,8 @@ export class FaceAnalyzer {
 
                 const landmarks = results.multiFaceLandmarks[0];
                 const segmentedData = this.segmentFace(landmarks);
-                resolve({ landmarks, segmentedData });
+                const faceOval = this.getFaceOval(landmarks);
+                resolve({ landmarks, segmentedData, faceOval });
             });
 
             this.faceMesh.send({ image: imageElement });
@@ -58,6 +65,21 @@ export class FaceAnalyzer {
             [FACE_REGIONS.NOSE]: landmarks[1],
             [FACE_REGIONS.T_ZONE]: landmarks[168],
         };
+    }
+
+    private getFaceOval(landmarks: any[]): FaceOvalData[] {
+        // MediaPipe Face Mesh Silhouette (Oval) Indices
+        const ovalIndices = [
+            10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378,
+            400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21,
+            54, 103, 67, 109
+        ];
+
+        return ovalIndices.map(index => ({
+            x: landmarks[index].x,
+            y: landmarks[index].y,
+            z: landmarks[index].z
+        }));
     }
 
     public matchTemplate(landmarks: any[]): string {

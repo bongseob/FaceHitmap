@@ -42,38 +42,54 @@ export const INGREDIENT_LIBRARY: Record<string, Ingredient> = {
     }
 };
 
-export const getRecommendedIngredients = (hydrationData: Record<string, number>): Ingredient[] => {
+import { SensorData } from './constants';
+
+export const getRecommendedIngredients = (hydrationData: Record<string, SensorData>): Ingredient[] => {
     const values = Object.values(hydrationData);
-    const avg = values.reduce((a, b) => a + b, 0) / values.length;
+    if (values.length === 0) return [];
+
+    const avgMoisture = values.reduce((a, b) => a + b.moisture, 0) / values.length;
+    const avgSebum = values.reduce((a, b) => a + b.sebum, 0) / values.length;
 
     const recommendations: Ingredient[] = [];
 
-    // Deep Hydration (Very Dry)
-    if (avg < 30) {
-        recommendations.push(INGREDIENT_LIBRARY.HYALURONIC_ACID);
-        recommendations.push(INGREDIENT_LIBRARY.CERAMIDE);
-        recommendations.push(INGREDIENT_LIBRARY.GLYCERIN);
+    // 1. 수분 부족 지성 (수부지): 수분 부족 + 유분 과다
+    if (avgMoisture < 40 && avgSebum > 60) {
+        recommendations.push(INGREDIENT_LIBRARY.HYALURONIC_ACID); // 속건조
+        recommendations.push(INGREDIENT_LIBRARY.NIACINAMIDE); // 피지 조절
+        recommendations.push(INGREDIENT_LIBRARY.PANTHENOL); // 진정
     }
-    // Standard Care
-    else if (avg < 60) {
-        recommendations.push(INGREDIENT_LIBRARY.PANTHENOL);
-        recommendations.push(INGREDIENT_LIBRARY.NIACINAMIDE);
-        recommendations.push(INGREDIENT_LIBRARY.SQUALANE);
+    // 2. 건성 피부: 수분 부족 + 유분 부족
+    else if (avgMoisture < 40 && avgSebum < 40) {
+        recommendations.push(INGREDIENT_LIBRARY.CERAMIDE); // 장벽 강화
+        recommendations.push(INGREDIENT_LIBRARY.SQUALANE); // 영양 공급
+        recommendations.push(INGREDIENT_LIBRARY.GLYCERIN); // 딥 수분
     }
-    // Maintenance & Soothing
+    // 3. 지성 피부: 유분 과다 (수분 양호)
+    else if (avgSebum > 60) {
+        recommendations.push(INGREDIENT_LIBRARY.NIACINAMIDE); // 피지 밸런스
+        recommendations.push(INGREDIENT_LIBRARY.CENTELLA); // 진정
+        recommendations.push(INGREDIENT_LIBRARY.PANTHENOL); // 가벼운 수분
+    }
+    // 4. 일반 복합성 / 유지 상태
     else {
-        recommendations.push(INGREDIENT_LIBRARY.CENTELLA);
         recommendations.push(INGREDIENT_LIBRARY.PANTHENOL);
+        recommendations.push(INGREDIENT_LIBRARY.CENTELLA);
+        recommendations.push(INGREDIENT_LIBRARY.CERAMIDE);
     }
 
-    // Region specific logic (Example: T-Zone balancing)
-    const tZone = hydrationData['t_zone'] || hydrationData['nose'] || 0;
-    if (tZone > 60 && avg < 40) {
-        // Combination skin logic
+    // T-Zone specific logic (복합성 감지 보강)
+    const tZone = hydrationData['t_zone'];
+    const nose = hydrationData['nose'];
+    const tZoneSebum = Math.max(tZone?.sebum || 0, nose?.sebum || 0);
+
+    if (tZoneSebum > 60 && avgSebum < 50) {
+        // 얼굴 전체 유분은 적은데 T존만 유분이 많은 전형적 복합성
         if (!recommendations.includes(INGREDIENT_LIBRARY.NIACINAMIDE)) {
             recommendations.push(INGREDIENT_LIBRARY.NIACINAMIDE);
         }
     }
 
-    return recommendations.slice(0, 3); // Return top 3
+    // 중복 제거 및 상위 3개 반환
+    return Array.from(new Set(recommendations)).slice(0, 3);
 };
