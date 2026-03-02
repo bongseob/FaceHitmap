@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Upload, Bluetooth, Activity, ShieldCheck, CheckCircle } from 'lucide-react';
+import { Camera, Upload, Bluetooth, Activity, ShieldCheck, CheckCircle, Globe } from 'lucide-react';
 import HeatmapCanvas from '../components/HeatmapCanvas';
 import ReportView from '../components/ReportView';
 import { useBluetoothDevice } from '../hooks/useBluetoothDevice';
 import { FaceAnalyzer, SegmentedData, FaceOvalData } from '../services/FaceAnalyzer';
 import { INITIAL_HYDRATION_DATA, FACE_REGIONS } from '../utils/constants';
 import SurveyModal, { UserProfile } from './SurveyModal';
+import { useI18n, SUPPORTED_LOCALES } from '../i18n/I18nContext';
 
 const MEASUREMENT_SEQUENCE = [
     FACE_REGIONS.FOREHEAD,
@@ -18,16 +19,19 @@ const MEASUREMENT_SEQUENCE = [
     FACE_REGIONS.T_ZONE
 ];
 
-const REGION_KOREAN_NAMES: Record<string, string> = {
-    [FACE_REGIONS.FOREHEAD]: '이마',
-    [FACE_REGIONS.LEFT_CHEEK]: '왼쪽 볼',
-    [FACE_REGIONS.RIGHT_CHEEK]: '오른쪽 볼',
-    [FACE_REGIONS.NOSE]: '코',
-    [FACE_REGIONS.CHIN]: '턱',
-    [FACE_REGIONS.T_ZONE]: 'T존'
+const REGION_KEYS: Record<string, keyof typeof INITIAL_HYDRATION_DATA extends string ? string : never> = {
+    [FACE_REGIONS.FOREHEAD]: 'forehead',
+    [FACE_REGIONS.LEFT_CHEEK]: 'leftCheek',
+    [FACE_REGIONS.RIGHT_CHEEK]: 'rightCheek',
+    [FACE_REGIONS.NOSE]: 'nose',
+    [FACE_REGIONS.CHIN]: 'chin',
+    [FACE_REGIONS.T_ZONE]: 'tZone',
 };
 
 export default function Dashboard() {
+    const { t, locale, setLocale } = useI18n();
+    const [showLangMenu, setShowLangMenu] = useState(false);
+
     const [landmarks, setLandmarks] = useState<SegmentedData | null>(null);
     const [faceOval, setFaceOval] = useState<FaceOvalData[] | null>(null);
     const [hydrationData, setHydrationData] = useState(INITIAL_HYDRATION_DATA);
@@ -49,7 +53,7 @@ export default function Dashboard() {
                 try {
                     const parsedProfile = JSON.parse(stored);
                     setUserProfile(parsedProfile);
-                    setShowSurvey(false); // 저장된 데이터가 있으면 모달 숨김
+                    setShowSurvey(false);
                 } catch (e) {
                     console.error("Failed to parse stored profile", e);
                 }
@@ -73,7 +77,6 @@ export default function Dashboard() {
     }, []);
 
     useEffect(() => {
-        // 카메라 스캔 모드이고 결과 화면이 아닐 때만 측정값을 수집합니다
         if (measurementData !== null && isCameraActive && !showReport) {
             const currentRegion = MEASUREMENT_SEQUENCE[currentStepIndex];
 
@@ -82,19 +85,15 @@ export default function Dashboard() {
                 [currentRegion]: measurementData
             }));
 
-            // 이벤트를 1회성으로 소모 (중복 실행 방지)
             setMeasurementData(null);
             setHasMeasured(true);
 
             if (currentStepIndex >= MEASUREMENT_SEQUENCE.length - 1) {
-                // 모든 순서 측정이 완료되면 1초 뒤 자동으로 완료 처리 (마지막 데이터가 화면에 표시될 시간 확보)
                 setTimeout(() => {
                     handleComplete();
                 }, 1000);
             } else {
-                // 다음 단계로 이동
                 setCurrentStepIndex(prev => prev + 1);
-                // 수동 입력 값 초기화
                 setManualMoisture('');
                 setManualSebum('');
             }
@@ -106,15 +105,14 @@ export default function Dashboard() {
         const sebumValue = parseInt(manualSebum, 10);
 
         if (isNaN(moistureValue) || moistureValue < 0 || moistureValue > 100) {
-            alert('수분을 0에서 100 사이의 숫자로 입력해주세요.');
+            alert(t.dashboard.moistureValidation);
             return;
         }
         if (isNaN(sebumValue) || sebumValue < 0 || sebumValue > 100) {
-            alert('유분을 0에서 100 사이의 숫자로 입력해주세요.');
+            alert(t.dashboard.sebumValidation);
             return;
         }
 
-        // 블루투스로 값이 들어온 것과 똑같이 measurementData 상태 갱신
         setMeasurementData({ moisture: moistureValue, sebum: sebumValue });
     };
 
@@ -159,9 +157,8 @@ export default function Dashboard() {
     };
 
     const handleComplete = () => {
-        // Stop all updates and freeze the current data for the report
         setIsCameraActive(false);
-        disconnect(); // Also stop Bluetooth/Simulation updates
+        disconnect();
 
         if (videoRef.current?.srcObject) {
             (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
@@ -189,6 +186,11 @@ export default function Dashboard() {
         }
     };
 
+    const getRegionName = (regionId: string): string => {
+        const key = REGION_KEYS[regionId] as keyof typeof t.dashboard.regions;
+        return t.dashboard.regions[key] || regionId;
+    };
+
     return (
         <div className="min-h-screen bg-slate-900 text-white p-8">
             <SurveyModal
@@ -203,19 +205,42 @@ export default function Dashboard() {
                     hydrationData={hydrationData}
                     faceType={faceType}
                     userProfile={userProfile}
-                    // faceType="Round / Square" // 강제로 둥근/각진형 테스트
                     onReset={handleReset}
                 />
             )}
 
-            <header className="mb-8 flex justify-between items-center">
+            <header className="mb-8 flex justify-between items-center print:hidden">
                 <div>
                     <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                        Face Hitmap
+                        {t.dashboard.title}
                     </h1>
-                    <p className="text-slate-400">실시간 얼굴 부위별 수분 측정 및 분석</p>
+                    <p className="text-slate-400">{t.dashboard.subtitle}</p>
                 </div>
-                <div className="flex gap-4 print:hidden">
+                <div className="flex gap-4">
+                    {/* Language Selector */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowLangMenu(!showLangMenu)}
+                            className="flex items-center gap-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs border border-slate-700 transition-all text-slate-300"
+                        >
+                            <Globe size={14} className="text-cyan-400" />
+                            {SUPPORTED_LOCALES.find(l => l.code === locale)?.flag}
+                        </button>
+                        {showLangMenu && (
+                            <div className="absolute right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden min-w-[140px]">
+                                {SUPPORTED_LOCALES.map(l => (
+                                    <button
+                                        key={l.code}
+                                        onClick={() => { setLocale(l.code); setShowLangMenu(false); }}
+                                        className={`w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-all ${locale === l.code ? 'bg-cyan-600/20 text-cyan-400' : 'text-slate-300 hover:bg-slate-700'}`}
+                                    >
+                                        <span>{l.flag}</span>
+                                        <span>{l.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                     {userProfile && (
                         <button
                             onClick={() => setShowSurvey(true)}
@@ -224,12 +249,12 @@ export default function Dashboard() {
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                             </svg>
-                            <span className="hidden sm:inline">프로필 수정</span>
+                            <span className="hidden sm:inline">{t.common.editProfile}</span>
                         </button>
                     )}
                     <div className="flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-lg text-xs border border-slate-700">
                         <ShieldCheck size={14} className={isSimulating ? "text-yellow-400" : "text-green-400"} />
-                        <span>상태: {isSimulating ? '시뮬레이션 모드' : '실시간 모드'}</span>
+                        <span>{t.common.status}: {isSimulating ? t.common.simulationMode : t.common.realtimeMode}</span>
                     </div>
                     <button
                         onClick={connect}
@@ -238,12 +263,12 @@ export default function Dashboard() {
                             }`}
                     >
                         <Bluetooth size={18} />
-                        {isConnecting ? '연결 중...' : '장비 연결'}
+                        {isConnecting ? t.common.connecting : t.common.connectDevice}
                     </button>
                 </div>
             </header>
 
-            <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <main className="grid grid-cols-1 lg:grid-cols-3 gap-8 print:hidden">
                 {/* Left: Viewport */}
                 <div className="lg:col-span-2 relative bg-black rounded-2xl overflow-hidden shadow-2xl border border-slate-800 aspect-video group">
                     {!isCameraActive ? (
@@ -253,7 +278,7 @@ export default function Dashboard() {
                                 onClick={handleCameraStart}
                                 className="px-6 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-all border border-slate-700"
                             >
-                                카메라 시작하기
+                                {t.dashboard.startCamera}
                             </button>
                         </div>
                     ) : (
@@ -281,7 +306,7 @@ export default function Dashboard() {
                                     className="absolute bottom-4 right-4 flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-400 text-white font-bold rounded-xl shadow-xl transition-all animate-bounce"
                                 >
                                     <CheckCircle size={20} />
-                                    측정 완료
+                                    {t.dashboard.measureComplete}
                                 </button>
                             )}
 
@@ -289,7 +314,7 @@ export default function Dashboard() {
                                 onClick={() => setIsCameraActive(false)}
                                 className="absolute top-4 right-4 px-3 py-1 bg-red-600/30 hover:bg-red-600/80 rounded-lg text-xs transition-all border border-red-500/30"
                             >
-                                카메라 중지
+                                {t.dashboard.stopCamera}
                             </button>
                         </>
                     )}
@@ -302,28 +327,28 @@ export default function Dashboard() {
                         <h2 className="text-lg font-semibold mb-6 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Activity size={18} className="text-cyan-400 animate-pulse" />
-                                측정 가이드
+                                {t.dashboard.measureGuide}
                             </div>
                             {isSimulating && <span className="text-[10px] bg-yellow-400/10 text-yellow-400 px-2 py-0.5 rounded border border-yellow-400/20 animate-pulse">SIM</span>}
                         </h2>
 
                         {!isCameraActive && !showReport ? (
                             <div className="text-center text-slate-400 py-8 text-sm border border-dashed border-slate-700 rounded-xl">
-                                카메라를 먼저 시작해주세요.
+                                {t.dashboard.startCameraFirst}
                             </div>
                         ) : showReport ? (
                             <div className="text-center text-green-400 py-8 font-bold border border-green-500/30 bg-green-500/10 rounded-xl flex flex-col items-center justify-center gap-3">
                                 <CheckCircle size={32} />
-                                측정이 모두 완료되었습니다.
+                                {t.dashboard.allMeasurementsComplete}
                             </div>
                         ) : (
                             <div className="space-y-4">
                                 <div className="text-center py-5 bg-gradient-to-r from-blue-900/40 to-cyan-900/40 border border-cyan-500/30 rounded-xl shadow-inner mb-6">
                                     <div className="text-[10px] text-cyan-300 font-bold tracking-widest uppercase mb-1">
-                                        STEP {currentStepIndex + 1} / {MEASUREMENT_SEQUENCE.length}
+                                        {t.dashboard.step} {currentStepIndex + 1} {t.dashboard.of} {MEASUREMENT_SEQUENCE.length}
                                     </div>
                                     <div className="text-lg font-black text-white">
-                                        장비를 <span className="text-cyan-400 border-b-2 border-cyan-400 pb-0.5">{REGION_KOREAN_NAMES[MEASUREMENT_SEQUENCE[currentStepIndex]]}</span>에 대고 버튼을 누르세요.
+                                        {t.dashboard.placeDeviceOn} <span className="text-cyan-400 border-b-2 border-cyan-400 pb-0.5">{getRegionName(MEASUREMENT_SEQUENCE[currentStepIndex])}</span> {t.dashboard.pressButton}
                                     </div>
                                 </div>
 
@@ -350,7 +375,7 @@ export default function Dashboard() {
                                                             {isPast ? <CheckCircle size={12} /> : idx + 1}
                                                         </div>
                                                         <span className={`text-sm font-medium ${isCurrent ? 'text-white' : 'text-slate-400'}`}>
-                                                            {REGION_KOREAN_NAMES[region]}
+                                                            {getRegionName(region)}
                                                         </span>
                                                     </div>
 
@@ -358,8 +383,8 @@ export default function Dashboard() {
                                                         <div className="font-mono text-sm font-bold flex gap-2">
                                                             {isPast || (isCurrent && value.moisture > 0) ? (
                                                                 <>
-                                                                    <span className="text-cyan-400">수분 {value.moisture}%</span>
-                                                                    <span className="text-yellow-400 text-opacity-80 border-l border-slate-700 pl-2">유분 {value.sebum}%</span>
+                                                                    <span className="text-cyan-400">{t.common.moisture} {value.moisture}%</span>
+                                                                    <span className="text-yellow-400 text-opacity-80 border-l border-slate-700 pl-2">{t.common.sebum} {value.sebum}%</span>
                                                                 </>
                                                             ) : (
                                                                 <span className="text-slate-600">-</span>
@@ -368,13 +393,13 @@ export default function Dashboard() {
                                                     </div>
                                                 </div>
 
-                                                {/* 수동 입력 폼 (현재 활성화된 단계에만 표시) */}
+                                                {/* Manual input form */}
                                                 {
                                                     isCurrent && (
                                                         <div className="mt-2 bg-slate-900/50 p-3 rounded-xl border border-slate-700 flex flex-col sm:flex-row items-center gap-3 justify-between">
                                                             <div className="flex items-center gap-2 flex-1 w-full">
                                                                 <div className="flex items-center bg-slate-800 rounded-lg px-2 flex-1 border border-slate-700 focus-within:border-cyan-500 focus-within:ring-1 focus-within:ring-cyan-500 transition-all">
-                                                                    <span className="text-[10px] text-slate-400 mr-1 whitespace-nowrap">수분</span>
+                                                                    <span className="text-[10px] text-slate-400 mr-1 whitespace-nowrap">{t.common.moisture}</span>
                                                                     <input
                                                                         type="number"
                                                                         min="0" max="100"
@@ -386,7 +411,7 @@ export default function Dashboard() {
                                                                     <span className="text-[10px] text-slate-500 ml-1">%</span>
                                                                 </div>
                                                                 <div className="flex items-center bg-slate-800 rounded-lg px-2 flex-1 border border-slate-700 focus-within:border-yellow-500 focus-within:ring-1 focus-within:ring-yellow-500 transition-all">
-                                                                    <span className="text-[10px] text-slate-400 mr-1 whitespace-nowrap">유분</span>
+                                                                    <span className="text-[10px] text-slate-400 mr-1 whitespace-nowrap">{t.common.sebum}</span>
                                                                     <input
                                                                         type="number"
                                                                         min="0" max="100"
@@ -403,7 +428,7 @@ export default function Dashboard() {
                                                                 disabled={!manualMoisture || !manualSebum}
                                                                 className="w-full sm:w-auto px-4 py-1.5 bg-slate-700 hover:bg-cyan-600 disabled:opacity-50 disabled:hover:bg-slate-700 text-white text-xs font-bold rounded-lg transition-all border border-slate-600 hover:border-cyan-500 whitespace-nowrap"
                                                             >
-                                                                ✔ 입력
+                                                                ✔ {t.common.input}
                                                             </button>
                                                         </div>
                                                     )}
@@ -418,7 +443,7 @@ export default function Dashboard() {
                     <section className="bg-slate-800/50 backdrop-blur-md p-6 rounded-2xl border border-slate-700 shadow-xl">
                         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                             <Upload size={18} className="text-purple-400" />
-                            얼굴 유형 매칭
+                            {t.dashboard.faceTypeMatch}
                         </h2>
                         <div className="text-center p-6 bg-slate-900/80 rounded-xl border border-slate-700 border-dashed relative overflow-hidden">
                             {faceType ? (
@@ -428,14 +453,14 @@ export default function Dashboard() {
                                     </div>
                                     <div className="h-0.5 w-12 bg-purple-500/30 mx-auto mb-3" />
                                     <p className="text-xs text-slate-400 leading-relaxed">
-                                        분석 결과, 균형 잡힌 관리와 <br />
-                                        <span className="text-purple-300">T존 유수분 밸런스</span> 조절이 추천됩니다.
+                                        {t.dashboard.analysisResult}<br />
+                                        <span className="text-purple-300">{t.dashboard.tZoneBalance}</span>
                                     </p>
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center gap-2 opacity-40">
                                     <div className="w-8 h-8 rounded-full border-2 border-slate-600 border-t-purple-400 animate-spin" />
-                                    <p className="text-xs text-slate-500">얼굴 스캔을 기다리는 중...</p>
+                                    <p className="text-xs text-slate-500">{t.dashboard.waitingForScan}</p>
                                 </div>
                             )}
                         </div>
@@ -443,7 +468,12 @@ export default function Dashboard() {
 
                     {btError && (
                         <div className="p-4 bg-yellow-400/5 border border-yellow-400/20 rounded-xl text-yellow-200/80 text-[10px] text-center leading-normal">
-                            알림: {btError}
+                            {t.common.alert}: {
+                                btError === 'BT_NOT_SUPPORTED' ? t.bluetooth.notSupported
+                                    : btError === 'BT_DISCONNECTED' ? t.bluetooth.disconnected
+                                        : btError === 'BT_CONNECT_FAILED' ? t.bluetooth.connectionFailed
+                                            : btError
+                            }
                         </div>
                     )}
                 </div>

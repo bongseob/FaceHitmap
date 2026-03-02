@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, Globe, AlertCircle } from 'lucide-react';
+import { useI18n } from '../i18n/I18nContext';
 
 export interface UserProfile {
     age: string;
@@ -19,6 +20,7 @@ interface SurveyModalProps {
 }
 
 const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete, initialData }) => {
+    const { t } = useI18n();
     const [age, setAge] = useState<string>('');
     const [race, setRace] = useState<string>('');
     const [climate, setClimate] = useState<string>('');
@@ -58,60 +60,60 @@ const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete, initialDa
             <div className="bg-[#162031] w-full max-w-lg rounded-2xl border border-slate-700 shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in duration-300">
                 <div className="flex items-center gap-3 mb-6 border-b border-slate-700 pb-4">
                     <User className="text-cyan-400" size={24} />
-                    <h2 className="text-xl font-bold text-white">맞춤형 피부 분석 프로필 설정</h2>
+                    <h2 className="text-xl font-bold text-white">{t.survey.title}</h2>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Basic Demographics */}
                     <div className="space-y-4 bg-slate-800/50 p-4 rounded-xl border border-slate-700">
                         <h3 className="text-sm font-semibold text-cyan-300 flex items-center gap-2 mb-3">
-                            <Globe size={16} /> 기본 인적 특성 (Exposome)
+                            <Globe size={16} /> {t.survey.exposomeTitle}
                         </h3>
 
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs text-slate-400 font-medium">연령대 (Age)</label>
+                            <label className="text-xs text-slate-400 font-medium">{t.survey.ageLabel}</label>
                             <select
                                 value={age}
                                 onChange={(e) => setAge(e.target.value)}
                                 className="bg-slate-900 border border-slate-700 text-white rounded-lg p-2.5 text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition"
                                 required
                             >
-                                <option value="" disabled>선택해주세요</option>
-                                <option value="10s">10대 (Teens)</option>
-                                <option value="20s">20대 (20s)</option>
-                                <option value="30s">30대 (30s)</option>
-                                <option value="40s">40대 (40s)</option>
-                                <option value="50s_plus">50대 이상 (50s+)</option>
+                                <option value="" disabled>{t.survey.selectPlaceholder}</option>
+                                <option value="10s">{t.survey.age10s}</option>
+                                <option value="20s">{t.survey.age20s}</option>
+                                <option value="30s">{t.survey.age30s}</option>
+                                <option value="40s">{t.survey.age40s}</option>
+                                <option value="50s_plus">{t.survey.age50sPlus}</option>
                             </select>
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs text-slate-400 font-medium">피부타입/인종 (Skin Type/Race)</label>
+                            <label className="text-xs text-slate-400 font-medium">{t.survey.raceLabel}</label>
                             <select
                                 value={race}
                                 onChange={(e) => setRace(e.target.value)}
                                 className="bg-slate-900 border border-slate-700 text-white rounded-lg p-2.5 text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition"
                                 required
                             >
-                                <option value="" disabled>선택해주세요</option>
-                                <option value="asian">아시아인 (Asian / Type III-IV)</option>
-                                <option value="caucasian">백인 (Caucasian / Type I-II)</option>
-                                <option value="african">흑인 (African / Type V-VI)</option>
+                                <option value="" disabled>{t.survey.selectPlaceholder}</option>
+                                <option value="asian">{t.survey.raceAsian}</option>
+                                <option value="caucasian">{t.survey.raceCaucasian}</option>
+                                <option value="african">{t.survey.raceAfrican}</option>
                             </select>
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs text-slate-400 font-medium">주 거주 환경 (Climate)</label>
+                            <label className="text-xs text-slate-400 font-medium">{t.survey.climateLabel}</label>
                             <select
                                 value={climate}
                                 onChange={(e) => setClimate(e.target.value)}
                                 className="bg-slate-900 border border-slate-700 text-white rounded-lg p-2.5 text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition"
                                 required
                             >
-                                <option value="" disabled>선택해주세요</option>
-                                <option value="dry">건조한 기후 (Dry/Arid)</option>
-                                <option value="humid">덥고 습한 기후 (Hot/Humid)</option>
-                                <option value="temperate">온화한 기후 (Temperate)</option>
+                                <option value="" disabled>{t.survey.selectPlaceholder}</option>
+                                <option value="dry">{t.survey.climateDry}</option>
+                                <option value="humid">{t.survey.climateHumid}</option>
+                                <option value="temperate">{t.survey.climateTemperate}</option>
                             </select>
                         </div>
                     </div>
@@ -120,15 +122,15 @@ const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete, initialDa
                     <div className="space-y-4 bg-slate-800/50 p-4 rounded-xl border border-slate-700">
                         <div className="flex items-center justify-between mb-3">
                             <h3 className="text-sm font-semibold text-purple-300 flex items-center gap-2">
-                                <AlertCircle size={16} /> 자가 진단 평가
+                                <AlertCircle size={16} /> {t.survey.selfAssessment}
                             </h3>
-                            <span className="text-[10px] text-slate-500">1: 낮음 / 10: 높음</span>
+                            <span className="text-[10px] text-slate-500">{t.survey.scaleLowHigh}</span>
                         </div>
 
                         <div className="space-y-3">
                             <div>
                                 <div className="flex justify-between text-xs mb-1">
-                                    <span className="text-slate-300">평소 피부 건조함/당김 정도</span>
+                                    <span className="text-slate-300">{t.survey.drynessLabel}</span>
                                     <span className="text-cyan-400 font-bold">{dryness}</span>
                                 </div>
                                 <input
@@ -140,7 +142,7 @@ const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete, initialDa
 
                             <div>
                                 <div className="flex justify-between text-xs mb-1">
-                                    <span className="text-slate-300">피부 민감도 (붉어짐, 트러블 빈도)</span>
+                                    <span className="text-slate-300">{t.survey.sensitivityLabel}</span>
                                     <span className="text-purple-400 font-bold">{sensitivity}</span>
                                 </div>
                                 <input
@@ -152,7 +154,7 @@ const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete, initialDa
 
                             <div>
                                 <div className="flex justify-between text-xs mb-1">
-                                    <span className="text-slate-300">색소침착 (기미, 잡티 등) 체감 정도</span>
+                                    <span className="text-slate-300">{t.survey.pigmentationLabel}</span>
                                     <span className="text-yellow-400 font-bold">{pigmentation}</span>
                                 </div>
                                 <input
@@ -169,7 +171,7 @@ const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete, initialDa
                         disabled={isSubmitDisabled}
                         className="w-full py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-900/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        프로필 저장 및 분석 준비 완료
+                        {t.survey.submitButton}
                     </button>
                 </form>
             </div>

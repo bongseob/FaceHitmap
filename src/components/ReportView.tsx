@@ -6,6 +6,7 @@ import { REGION_COLORS, FACE_REGIONS, DEFAULT_LANDMARKS, SensorData } from '../u
 import { getAdvancedRecommendations } from '../utils/recommendations';
 import { getAIRecommendation } from '../services/GeminiService';
 import { UserProfile } from './SurveyModal';
+import { useI18n } from '../i18n/I18nContext';
 
 interface ReportViewProps {
     landmarks: any;
@@ -16,8 +17,9 @@ interface ReportViewProps {
 }
 
 const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceType, userProfile, onReset }) => {
+    const { t, locale } = useI18n();
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [aiReason, setAiReason] = useState<string>("AI 분석 중...");
+    const [aiReason, setAiReason] = useState<string>("");
 
     const hydrationValues = Object.values(hydrationData);
     const averageHydration = hydrationValues.length > 0
@@ -28,15 +30,16 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
         ? Math.round(hydrationValues.reduce((acc, curr) => acc + curr.sebum, 0) / hydrationValues.length)
         : 0;
 
-    const advancedRecs = getAdvancedRecommendations(hydrationData, userProfile);
+    const advancedRecs = getAdvancedRecommendations(hydrationData, userProfile, locale);
 
     useEffect(() => {
+        setAiReason(t.report.aiAnalyzing);
         const fetchAI = async () => {
-            const reason = await getAIRecommendation(hydrationData, faceType, userProfile);
+            const reason = await getAIRecommendation(hydrationData, faceType, userProfile, locale);
             setAiReason(reason);
         };
         fetchAI();
-    }, [hydrationData, faceType, userProfile]);
+    }, [hydrationData, faceType, userProfile, locale]);
 
     useEffect(() => {
         if (!canvasRef.current) return;
@@ -199,7 +202,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                 <div className="md:w-[42%] bg-[#0f172a] p-6 lg:p-8 flex flex-col items-center border-b md:border-b-0 md:border-r border-[#2d3a4f] overflow-y-auto overflow-x-hidden custom-scrollbar transform-gpu will-change-scroll overscroll-contain print:!w-full print:!h-auto print:overflow-visible print:!border-none print:p-4">
                     <div className="w-full flex items-center gap-2 text-[#22d3ee] text-[9px] font-bold uppercase tracking-widest mb-6 border-b border-white/5 pb-4">
                         <CheckCircle2 size={12} />
-                        ANALYSIS COMPLETE
+                        {t.report.analysisComplete}
                     </div>
 
                     <div className="w-full shrink-0 relative bg-black rounded-[1.5rem] border border-[#2d3a4f] mb-6 flex items-center justify-center overflow-hidden shadow-inner group py-4">
@@ -221,7 +224,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                     </div>
 
                     <div className="text-center mb-6">
-                        <h3 className="text-[#64748b] text-[9px] font-bold uppercase tracking-[0.2em] mb-1">ANALYSIS & PROFILE</h3>
+                        <h3 className="text-[#64748b] text-[9px] font-bold uppercase tracking-[0.2em] mb-1">{t.report.analysisProfile}</h3>
                         <p className="text-xl font-black text-white print:text-gray-900 tracking-tight leading-none mb-1">{faceType || 'Oval Template'}</p>
                         <p className="text-sm font-bold text-cyan-400 mb-3">{advancedRecs.primaryType}</p>
 
@@ -253,13 +256,13 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                     <div className="w-full space-y-4 mb-6">
                         <div className="flex items-center gap-2 mb-1">
                             <Sparkles size={12} className="text-[#fbbf24]" />
-                            <h4 className="text-[9px] font-bold text-[#94a3b8] uppercase tracking-widest">추천 제형 및 활성 성분</h4>
+                            <h4 className="text-[9px] font-bold text-[#94a3b8] uppercase tracking-widest">{t.report.baseTexture} & {t.report.activeIngredients}</h4>
                         </div>
 
                         <div className="space-y-3">
                             {/* Base Texture */}
                             <div className="bg-[#1e293b]/40 p-3 rounded-xl border border-[#2d3a4f] border-l-4 border-l-cyan-500">
-                                <div className="text-[9px] font-bold text-cyan-400 mb-1 uppercase tracking-wider">Base Texture</div>
+                                <div className="text-[9px] font-bold text-cyan-400 mb-1 uppercase tracking-wider">{t.report.baseTexture}</div>
                                 {advancedRecs.baseTexture.map((ing, idx) => (
                                     <div key={idx} className="flex flex-col mt-1">
                                         <div className="text-[12px] font-bold text-white print:text-gray-900 leading-none">{ing.name}</div>
@@ -291,7 +294,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                     <div className="w-full mt-auto pt-4 border-t border-white/5">
                         <div className="flex items-center gap-2 mb-3">
                             <BrainCircuit size={14} className="text-[#a78bfa]" />
-                            <h4 className="text-[9px] font-bold text-[#94a3b8] uppercase tracking-widest">AI 추천 사유</h4>
+                            <h4 className="text-[9px] font-bold text-[#94a3b8] uppercase tracking-widest">{t.report.aiRecommendation}</h4>
                         </div>
                         <div className="bg-gradient-to-br from-[#1e1b4b]/50 to-[#1e293b]/30 p-4 rounded-xl border border-[#312e81]/30 shadow-inner">
                             <p className="text-[11px] text-[#94a3b8] leading-relaxed">
@@ -304,8 +307,8 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                 {/* Right Column */}
                 <div className="md:w-[58%] p-6 lg:p-10 flex flex-col overflow-y-auto overflow-x-hidden custom-scrollbar transform-gpu will-change-scroll overscroll-contain print:!w-full print:!h-auto print:overflow-visible print:p-4 print:mt-4">
                     <div className="mb-6 lg:mb-8">
-                        <h2 className="text-3xl font-black mb-1.5 tracking-tighter text-white print:text-gray-900">스킨케어 분석 보고서</h2>
-                        <p className="text-[#64748b] text-sm font-medium">부위별 정밀 수분 분포 결과입니다.</p>
+                        <h2 className="text-3xl font-black mb-1.5 tracking-tighter text-white print:text-gray-900">{t.report.reportTitle}</h2>
+                        <p className="text-[#64748b] text-sm font-medium">{t.report.reportSubtitle}</p>
                     </div>
 
                     <div className="space-y-6 flex-grow">
@@ -316,7 +319,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                     <Activity size={80} />
                                 </div>
                                 <div className="flex flex-col mb-4 relative z-10">
-                                    <span className="text-[#94a3b8] text-[10px] font-bold uppercase tracking-[0.15em] mb-2">전체 평균 수분도</span>
+                                    <span className="text-[#94a3b8] text-[10px] font-bold uppercase tracking-[0.15em] mb-2">{t.report.avgMoisture}</span>
                                     <span className="text-4xl font-black text-[#22d3ee] tracking-tighter leading-none">{averageHydration}%</span>
                                 </div>
                                 <div className="w-full bg-[#0b121e] h-2 rounded-full overflow-hidden border border-white/[0.02]">
@@ -333,7 +336,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                     <Activity size={80} />
                                 </div>
                                 <div className="flex flex-col mb-4 relative z-10">
-                                    <span className="text-[#94a3b8] text-[10px] font-bold uppercase tracking-[0.15em] mb-2 text-right">전체 평균 유분도</span>
+                                    <span className="text-[#94a3b8] text-[10px] font-bold uppercase tracking-[0.15em] mb-2 text-right">{t.report.avgSebum}</span>
                                     <span className="text-4xl font-black text-[#fbbf24] tracking-tighter leading-none text-right">{averageSebum}%</span>
                                 </div>
                                 <div className="w-full bg-[#0b121e] h-2 rounded-full overflow-hidden border border-white/[0.02]">
@@ -346,8 +349,8 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                         </div>
 
                         <p className="text-[11px] text-[#64748b] leading-relaxed w-full bg-[#1e293b]/20 p-4 rounded-xl border border-[#2d3a4f]/50">
-                            분석 결과, 현재 수분도는 <span className="text-[#22d3ee] font-bold">{averageHydration}%</span>로 {averageHydration < 40 ? '관리가 시급하며' : '양호하며'}, 유분은 <span className="text-[#fbbf24] font-bold">{averageSebum}%</span>로 측정되어
-                            복합적인 {averageSebum > 60 && averageHydration < 40 ? '수분 부족 지성(수부지)' : averageSebum > 60 ? '지성 피부' : averageHydration < 40 ? '건성 피부' : '균형 잡힌 피부'} 타입으로 분석됩니다.
+                            {t.report.skinType}: <span className="text-[#22d3ee] font-bold">{averageHydration}%</span> {t.common.moisture}, <span className="text-[#fbbf24] font-bold">{averageSebum}%</span> {t.common.sebum} — {t.report.complexType}{' '}
+                            {averageSebum > 60 && averageHydration < 40 ? t.report.dehydratedOily : averageSebum > 60 ? t.report.oilySkin : averageHydration < 40 ? t.report.drySkin : t.report.balancedSkin}
                         </p>
 
                         <div className="grid grid-cols-2 gap-3 lg:gap-4">
@@ -367,12 +370,12 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                         </div>
                                         <div className="flex justify-between items-end w-full">
                                             <div className="flex flex-col">
-                                                <span className="text-[10px] text-[#22d3ee]/60 font-bold mb-1">수분</span>
+                                                <span className="text-[10px] text-[#22d3ee]/60 font-bold mb-1">{t.common.moisture}</span>
                                                 <div className="text-lg font-mono font-black text-white print:text-gray-900 leading-none">{data.moisture}%</div>
                                             </div>
                                             <div className="h-6 w-px bg-[#2d3a4f]" /> {/* Divider */}
                                             <div className="flex flex-col items-end">
-                                                <span className="text-[10px] text-[#fbbf24]/60 font-bold mb-1">유분</span>
+                                                <span className="text-[10px] text-[#fbbf24]/60 font-bold mb-1">{t.common.sebum}</span>
                                                 <div className="text-lg font-mono font-black text-white print:text-gray-900 leading-none">{data.sebum}%</div>
                                             </div>
                                         </div>
@@ -388,14 +391,14 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                             className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-white text-[#0f172a] text-sm font-black rounded-xl hover:bg-[#e2e8f0] active:scale-[0.98] transition-all"
                         >
                             <Download size={16} />
-                            리포트 저장 (PDF)
+                            {t.report.savePdf}
                         </button>
                         <button
                             onClick={onReset}
                             className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-[#1e293b]/60 text-white text-sm font-bold rounded-xl hover:bg-[#1e293b] active:scale-[0.98] transition-all border border-[#2d3a4f]"
                         >
                             <RefreshCw size={16} />
-                            다시 측정하기
+                            {t.report.measureAgain}
                         </button>
                     </div>
                 </div>

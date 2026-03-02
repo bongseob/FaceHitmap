@@ -18,7 +18,7 @@ export const useBluetoothDevice = () => {
         const nav = typeof window !== 'undefined' ? (navigator as any) : null;
 
         if (!nav || !nav.bluetooth) {
-            setError('이 브라우저는 블루투스를 지원하지 않습니다. (시뮬레이션 모드를 사용합니다)');
+            setError('BT_NOT_SUPPORTED');
             startSimulation();
             return;
         }
@@ -37,11 +37,11 @@ export const useBluetoothDevice = () => {
 
             device.addEventListener('gattserverdisconnected', () => {
                 setDevice(null);
-                setError('장비 연결이 해제되었습니다.');
+                setError('BT_DISCONNECTED');
             });
 
         } catch (err: any) {
-            setError(err.message || '연결에 실패했습니다. (시뮬레이션 모드를 사용합니다)');
+            setError(err.message || 'BT_CONNECT_FAILED');
             startSimulation();
         } finally {
             setIsConnecting(false);
