@@ -195,7 +195,7 @@ export default function Dashboard() {
                     </h1>
                     <p className="text-slate-400">실시간 얼굴 부위별 수분 측정 및 분석</p>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-4 print:hidden">
                     <div className="flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-lg text-xs border border-slate-700">
                         <ShieldCheck size={14} className={isSimulating ? "text-yellow-400" : "text-green-400"} />
                         <span>상태: {isSimulating ? '시뮬레이션 모드' : '실시간 모드'}</span>

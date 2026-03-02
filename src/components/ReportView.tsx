@@ -222,7 +222,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
 
                     <div className="text-center mb-6">
                         <h3 className="text-[#64748b] text-[9px] font-bold uppercase tracking-[0.2em] mb-1">ANALYSIS & PROFILE</h3>
-                        <p className="text-xl font-black text-white tracking-tight leading-none mb-1">{faceType || 'Oval Template'}</p>
+                        <p className="text-xl font-black text-white print:text-gray-900 tracking-tight leading-none mb-1">{faceType || 'Oval Template'}</p>
                         <p className="text-sm font-bold text-cyan-400 mb-3">{advancedRecs.primaryType}</p>
 
                         {userProfile && (
@@ -262,7 +262,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                 <div className="text-[9px] font-bold text-cyan-400 mb-1 uppercase tracking-wider">Base Texture</div>
                                 {advancedRecs.baseTexture.map((ing, idx) => (
                                     <div key={idx} className="flex flex-col mt-1">
-                                        <div className="text-[12px] font-bold text-white leading-none">{ing.name}</div>
+                                        <div className="text-[12px] font-bold text-white print:text-gray-900 leading-none">{ing.name}</div>
                                         <div className="text-[10px] text-[#64748b] mt-0.5">{ing.description}</div>
                                     </div>
                                 ))}
@@ -276,7 +276,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                             <Beaker size={14} />
                                         </div>
                                         <div className="flex-1">
-                                            <div className="text-[11px] font-bold text-white mb-0.5 leading-none flex justify-between">
+                                            <div className="text-[11px] font-bold text-white print:text-gray-900 mb-0.5 leading-none flex justify-between">
                                                 <span>{ing.name}</span>
                                                 <span className="text-[9px] text-purple-400 bg-purple-900/30 px-1.5 rounded">{ing.benefit}</span>
                                             </div>
@@ -304,7 +304,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                 {/* Right Column */}
                 <div className="md:w-[58%] p-6 lg:p-10 flex flex-col overflow-y-auto overflow-x-hidden custom-scrollbar transform-gpu will-change-scroll overscroll-contain print:w-full print:h-auto print:overflow-visible print:p-4 print:mt-4">
                     <div className="mb-6 lg:mb-8">
-                        <h2 className="text-3xl font-black mb-1.5 tracking-tighter text-white">스킨케어 분석 보고서</h2>
+                        <h2 className="text-3xl font-black mb-1.5 tracking-tighter text-white print:text-gray-900">스킨케어 분석 보고서</h2>
                         <p className="text-[#64748b] text-sm font-medium">부위별 정밀 수분 분포 결과입니다.</p>
                     </div>
 
@@ -368,12 +368,12 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                         <div className="flex justify-between items-end w-full">
                                             <div className="flex flex-col">
                                                 <span className="text-[10px] text-[#22d3ee]/60 font-bold mb-1">수분</span>
-                                                <div className="text-lg font-mono font-black text-white leading-none">{data.moisture}%</div>
+                                                <div className="text-lg font-mono font-black text-white print:text-gray-900 leading-none">{data.moisture}%</div>
                                             </div>
                                             <div className="h-6 w-px bg-[#2d3a4f]" /> {/* Divider */}
                                             <div className="flex flex-col items-end">
                                                 <span className="text-[10px] text-[#fbbf24]/60 font-bold mb-1">유분</span>
-                                                <div className="text-lg font-mono font-black text-white leading-none">{data.sebum}%</div>
+                                                <div className="text-lg font-mono font-black text-white print:text-gray-900 leading-none">{data.sebum}%</div>
                                             </div>
                                         </div>
                                     </div>
