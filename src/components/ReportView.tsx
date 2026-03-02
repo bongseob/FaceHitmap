@@ -3,17 +3,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Download, RefreshCw, CheckCircle2, Sparkles, Beaker, Activity, BrainCircuit } from 'lucide-react';
 import { REGION_COLORS, FACE_REGIONS, DEFAULT_LANDMARKS, SensorData } from '../utils/constants';
-import { getRecommendedIngredients } from '../utils/recommendations';
+import { getAdvancedRecommendations } from '../utils/recommendations';
 import { getAIRecommendation } from '../services/GeminiService';
+import { UserProfile } from './SurveyModal';
 
 interface ReportViewProps {
     landmarks: any;
     hydrationData: Record<string, SensorData>;
     faceType: string | null;
+    userProfile?: UserProfile | null;
     onReset: () => void;
 }
 
-const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceType, onReset }) => {
+const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceType, userProfile, onReset }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [aiReason, setAiReason] = useState<string>("AI 분석 중...");
 
@@ -26,15 +28,15 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
         ? Math.round(hydrationValues.reduce((acc, curr) => acc + curr.sebum, 0) / hydrationValues.length)
         : 0;
 
-    const recommendedIngredients = getRecommendedIngredients(hydrationData);
+    const advancedRecs = getAdvancedRecommendations(hydrationData, userProfile);
 
     useEffect(() => {
         const fetchAI = async () => {
-            const reason = await getAIRecommendation(hydrationData, faceType);
+            const reason = await getAIRecommendation(hydrationData, faceType, userProfile);
             setAiReason(reason);
         };
         fetchAI();
-    }, [hydrationData, faceType]);
+    }, [hydrationData, faceType, userProfile]);
 
     useEffect(() => {
         if (!canvasRef.current) return;
@@ -219,27 +221,70 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                     </div>
 
                     <div className="text-center mb-6">
-                        <h3 className="text-[#64748b] text-[9px] font-bold uppercase tracking-[0.2em] mb-1">DETECTED FACE TYPE</h3>
-                        <p className="text-xl font-black text-white tracking-tight leading-none">{faceType || 'Oval Template'}</p>
+                        <h3 className="text-[#64748b] text-[9px] font-bold uppercase tracking-[0.2em] mb-1">ANALYSIS & PROFILE</h3>
+                        <p className="text-xl font-black text-white tracking-tight leading-none mb-1">{faceType || 'Oval Template'}</p>
+                        <p className="text-sm font-bold text-cyan-400 mb-3">{advancedRecs.primaryType}</p>
+
+                        {userProfile && (
+                            <div className="flex flex-wrap justify-center gap-1 mt-2 mb-2">
+                                <span className="px-2 py-0.5 bg-cyan-900/30 border border-cyan-800/50 text-cyan-300 text-[10px] rounded-full">
+                                    {userProfile.age}
+                                </span>
+                                <span className="px-2 py-0.5 bg-purple-900/30 border border-purple-800/50 text-purple-300 text-[10px] rounded-full">
+                                    {userProfile.race}
+                                </span>
+                                <span className="px-2 py-0.5 bg-yellow-900/30 border border-yellow-800/50 text-yellow-300 text-[10px] rounded-full">
+                                    {userProfile.climate}
+                                </span>
+                            </div>
+                        )}
+
+                        {advancedRecs.secondaryConditions.length > 0 && (
+                            <div className="flex flex-wrap justify-center gap-1">
+                                {advancedRecs.secondaryConditions.map((cond, idx) => (
+                                    <span key={idx} className="px-2 py-0.5 bg-red-900/30 border border-red-800/50 text-red-300 text-[10px] rounded-full font-medium">
+                                        {cond}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="w-full space-y-4 mb-6">
                         <div className="flex items-center gap-2 mb-1">
                             <Sparkles size={12} className="text-[#fbbf24]" />
-                            <h4 className="text-[9px] font-bold text-[#94a3b8] uppercase tracking-widest">추천 성분 리스트</h4>
+                            <h4 className="text-[9px] font-bold text-[#94a3b8] uppercase tracking-widest">추천 제형 및 활성 성분</h4>
                         </div>
-                        <div className="grid grid-cols-1 gap-2.5">
-                            {recommendedIngredients.map((ing, idx) => (
-                                <div key={idx} className="bg-[#1e293b]/40 p-3 rounded-xl border border-[#2d3a4f] flex items-start gap-3">
-                                    <div className="p-2 bg-[#0f172a] rounded-lg text-[#22d3ee] shrink-0">
-                                        <Beaker size={14} />
+
+                        <div className="space-y-3">
+                            {/* Base Texture */}
+                            <div className="bg-[#1e293b]/40 p-3 rounded-xl border border-[#2d3a4f] border-l-4 border-l-cyan-500">
+                                <div className="text-[9px] font-bold text-cyan-400 mb-1 uppercase tracking-wider">Base Texture</div>
+                                {advancedRecs.baseTexture.map((ing, idx) => (
+                                    <div key={idx} className="flex flex-col mt-1">
+                                        <div className="text-[12px] font-bold text-white leading-none">{ing.name}</div>
+                                        <div className="text-[10px] text-[#64748b] mt-0.5">{ing.description}</div>
                                     </div>
-                                    <div>
-                                        <div className="text-[12px] font-bold text-white mb-0.5 leading-none">{ing.name}</div>
-                                        <div className="text-[9px] text-[#64748b] leading-tight">{ing.description.substring(0, 45)}...</div>
+                                ))}
+                            </div>
+
+                            {/* Active Ingredients */}
+                            <div className="grid grid-cols-1 gap-2">
+                                {advancedRecs.activeIngredients.map((ing, idx) => (
+                                    <div key={idx} className="bg-[#1e293b]/40 p-2.5 rounded-xl border border-[#2d3a4f] flex items-center gap-3">
+                                        <div className="p-1.5 bg-[#0f172a] rounded-lg text-purple-400 shrink-0">
+                                            <Beaker size={14} />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="text-[11px] font-bold text-white mb-0.5 leading-none flex justify-between">
+                                                <span>{ing.name}</span>
+                                                <span className="text-[9px] text-purple-400 bg-purple-900/30 px-1.5 rounded">{ing.benefit}</span>
+                                            </div>
+                                            <div className="text-[9px] text-[#64748b] leading-tight">{ing.description.substring(0, 40)}...</div>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     </div>
 

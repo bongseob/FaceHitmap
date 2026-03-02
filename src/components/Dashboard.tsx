@@ -7,6 +7,7 @@ import ReportView from '../components/ReportView';
 import { useBluetoothDevice } from '../hooks/useBluetoothDevice';
 import { FaceAnalyzer, SegmentedData, FaceOvalData } from '../services/FaceAnalyzer';
 import { INITIAL_HYDRATION_DATA, FACE_REGIONS } from '../utils/constants';
+import SurveyModal, { UserProfile } from './SurveyModal';
 
 const MEASUREMENT_SEQUENCE = [
     FACE_REGIONS.FOREHEAD,
@@ -35,6 +36,10 @@ export default function Dashboard() {
     const [isCameraActive, setIsCameraActive] = useState(false);
     const [showReport, setShowReport] = useState(false);
     const [hasMeasured, setHasMeasured] = useState(false);
+
+    // 사용자 프로필 및 설문 상태
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+    const [showSurvey, setShowSurvey] = useState(true);
 
     // 수동 입력용 State 추가
     const [manualMoisture, setManualMoisture] = useState<string>('');
@@ -160,13 +165,25 @@ export default function Dashboard() {
         disconnect();
     };
 
+    const handleSurveyComplete = (profile: UserProfile) => {
+        setUserProfile(profile);
+        setShowSurvey(false);
+    };
+
     return (
         <div className="min-h-screen bg-slate-900 text-white p-8">
+            <SurveyModal
+                isOpen={showSurvey}
+                onComplete={handleSurveyComplete}
+            />
+
             {showReport && (
                 <ReportView
                     landmarks={landmarks}
                     hydrationData={hydrationData}
                     faceType={faceType}
+                    userProfile={userProfile}
+                    // faceType="Round / Square" // 강제로 둥근/각진형 테스트
                     onReset={handleReset}
                 />
             )}

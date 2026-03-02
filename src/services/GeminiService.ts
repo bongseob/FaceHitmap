@@ -1,11 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { SensorData } from '../utils/constants';
+import { UserProfile } from '../components/SurveyModal';
 
 // Note: In a real production app, the API key should be handled securely on the server-side
 // or via environment variables. For this demo, we use a placeholder or check for window.ENV
 const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
 
-export const getAIRecommendation = async (hydrationData: Record<string, SensorData>, faceType: string | null): Promise<string> => {
+export const getAIRecommendation = async (hydrationData: Record<string, SensorData>, faceType: string | null, userProfile?: UserProfile | null): Promise<string> => {
     if (!API_KEY) {
         // Fallback simulation if no API key is provided
         return simulateAIResponse(hydrationData, faceType);
@@ -13,20 +14,35 @@ export const getAIRecommendation = async (hydrationData: Record<string, SensorDa
 
     try {
         const genAI = new GoogleGenerativeAI(API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // 최신 버전 (1.5 pro 또는 2.0 등) 모델 사용
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+        const profileContext = userProfile
+            ? `
+            [Target User Profile]
+            - Age: ${userProfile.age}
+            - Ethnicity/Race: ${userProfile.race}
+            - Climate: ${userProfile.climate}
+            - Self-assessment [Scale 1-10]: Dryness(${userProfile.skinConcerns.dryness}), Sensitivity(${userProfile.skinConcerns.sensitivity}), Pigmentation(${userProfile.skinConcerns.pigmentation})
+            `
+            : "No specific demographic data provided.";
 
         const prompt = `
-      You are a professional skincare AI assistant. 
-      Based on the following facial hydration and sebum (oil) data (percentage):
-      ${JSON.stringify(hydrationData)}
-      And the detected face type: ${faceType || 'Oval'}
+      You are a world-class dermatologist and skincare expert consulting a patient.
+      Based on the following objective data and subjective self-assessment:
+      
+      [Objective Hardware Data]
+      Face Type: ${faceType || 'Oval'}
+      Hydration/Sebum %: ${JSON.stringify(hydrationData)}
+      
+      ${profileContext}
 
-      Please provide a concise and expert "AI Recommendation Reason" in Korean (approx. 200 characters).
-      - Analyze which regions are dry (low moisture), oily (high sebum), or balanced.
-      - Diagnose the comprehensive skin type (e.g. Dry, Oily, Combination, Dehydrated Oily).
-      - Suggest specific care based on the data.
-      - Sound premium, professional, and encouraging.
-      - Return only the text.
+      Please provide a highly professional, expert "Prescription/Consultation Report" (AI Recommendation Reason) in Korean (approx. 250-300 characters).
+      - Act as a doctor giving a direct prescription. Use a professional and encouraging medical tone.
+      - First, classify the innate skin type (Alipic, Normal, Oily) using sebum data, then state the acquired state (Dryness, Sensitivity, etc) using the climate and self-assessment data.
+      - Briefly explain why this diagnosis is made considering their age, race, and climate context.
+      - Suggest what kind of base texture (cream, gel, etc) and active ingredients they need based on this combo.
+      - Return ONLY the consultation text without any markdown tags.
     `;
 
         const result = await model.generateContent(prompt);
@@ -34,11 +50,11 @@ export const getAIRecommendation = async (hydrationData: Record<string, SensorDa
         return response.text();
     } catch (error) {
         console.error("Gemini API Error:", error);
-        return simulateAIResponse(hydrationData, faceType);
+        return simulateAIResponse(hydrationData, faceType, userProfile);
     }
 };
 
-const simulateAIResponse = (hydrationData: Record<string, SensorData>, faceType: string | null): string => {
+const simulateAIResponse = (hydrationData: Record<string, SensorData>, faceType: string | null, userProfile?: UserProfile | null): string => {
     const values = Object.values(hydrationData);
     const avgMoisture = values.reduce((a, b) => a + b.moisture, 0) / values.length;
     const avgSebum = values.reduce((a, b) => a + b.sebum, 0) / values.length;
