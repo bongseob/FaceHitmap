@@ -192,11 +192,11 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
     }, [landmarks, hydrationData, faceType]);
 
     return (
-        <div className="fixed inset-0 bg-[#0b121ecf] backdrop-blur-md z-50 flex items-center justify-center p-2 md:p-4 overflow-hidden">
-            <div className="max-w-[1000px] max-h-[95vh] w-full bg-[#162031] rounded-[2rem] border border-[#2d3a4f] shadow-2xl flex flex-col md:flex-row overflow-hidden scale-in-95 animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-[#0b121ecf] backdrop-blur-md z-50 flex items-center justify-center p-0 md:p-4 overflow-hidden print:static print:inset-auto print:bg-[#0b121e] print:p-0 print:overflow-visible print:block">
+            <div className="max-w-[1000px] max-h-[95vh] w-full bg-[#162031] rounded-[2rem] border border-[#2d3a4f] shadow-2xl flex flex-col md:flex-row overflow-hidden scale-in-95 animate-in fade-in duration-300 print:max-w-none print:max-h-none print:w-full print:rounded-none print:border-none print:shadow-none print:flex-col print:overflow-visible print:h-auto print:scale-100">
 
                 {/* Left Column */}
-                <div className="md:w-[42%] bg-[#0f172a] p-6 lg:p-8 flex flex-col items-center border-b md:border-b-0 md:border-r border-[#2d3a4f] overflow-y-auto overflow-x-hidden custom-scrollbar transform-gpu will-change-scroll overscroll-contain">
+                <div className="md:w-[42%] bg-[#0f172a] p-6 lg:p-8 flex flex-col items-center border-b md:border-b-0 md:border-r border-[#2d3a4f] overflow-y-auto overflow-x-hidden custom-scrollbar transform-gpu will-change-scroll overscroll-contain print:w-full print:h-auto print:overflow-visible print:border-none print:p-4">
                     <div className="w-full flex items-center gap-2 text-[#22d3ee] text-[9px] font-bold uppercase tracking-widest mb-6 border-b border-white/5 pb-4">
                         <CheckCircle2 size={12} />
                         ANALYSIS COMPLETE
@@ -302,7 +302,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                 </div>
 
                 {/* Right Column */}
-                <div className="md:w-[58%] p-6 lg:p-10 flex flex-col overflow-y-auto overflow-x-hidden custom-scrollbar transform-gpu will-change-scroll overscroll-contain">
+                <div className="md:w-[58%] p-6 lg:p-10 flex flex-col overflow-y-auto overflow-x-hidden custom-scrollbar transform-gpu will-change-scroll overscroll-contain print:w-full print:h-auto print:overflow-visible print:p-4 print:mt-4">
                     <div className="mb-6 lg:mb-8">
                         <h2 className="text-3xl font-black mb-1.5 tracking-tighter text-white">스킨케어 분석 보고서</h2>
                         <p className="text-[#64748b] text-sm font-medium">부위별 정밀 수분 분포 결과입니다.</p>
@@ -382,7 +382,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                         </div>
                     </div>
 
-                    <div className="mt-10 flex flex-col sm:flex-row gap-3">
+                    <div className="mt-10 flex flex-col sm:flex-row gap-3 print:hidden">
                         <button
                             onClick={() => window.print()}
                             className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-white text-[#0f172a] text-sm font-black rounded-xl hover:bg-[#e2e8f0] active:scale-[0.98] transition-all"
@@ -404,6 +404,19 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #2d3a4f; border-radius: 10px; }
+        
+        @media print {
+            body {
+                background-color: #0b121e !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            @page {
+                size: A4 portrait;
+                margin: 0.5cm;
+            }
+        }
       `}</style>
         </div>
     );
