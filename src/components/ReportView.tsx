@@ -202,12 +202,12 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                         ANALYSIS COMPLETE
                     </div>
 
-                    <div className="w-full relative bg-black rounded-[1.5rem] border border-[#2d3a4f] mb-6 flex items-center justify-center overflow-hidden shadow-inner group">
+                    <div className="w-full shrink-0 relative bg-black rounded-[1.5rem] border border-[#2d3a4f] mb-6 flex items-center justify-center overflow-hidden shadow-inner group py-4">
                         <canvas
                             ref={canvasRef}
                             width={320}
                             height={360}
-                            className="w-full h-auto max-h-[400px] object-contain"
+                            className="w-auto h-auto max-w-full max-h-[360px] object-contain"
                         />
                         <div className="absolute top-4 right-10 text-[8px] text-white/50 font-mono text-right pointer-events-none">
                             THERMAL_ID: SC-029<br />
