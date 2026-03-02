@@ -22,7 +22,7 @@ export const DEFAULT_LANDMARKS = {
   [FACE_REGIONS.LEFT_CHEEK]: { x: 0.3, y: 0.5 },
   [FACE_REGIONS.RIGHT_CHEEK]: { x: 0.7, y: 0.5 },
   [FACE_REGIONS.CHIN]: { x: 0.5, y: 0.85 },
-  [FACE_REGIONS.NOSE]: { x: 0.5, y: 0.45 },
+  [FACE_REGIONS.NOSE]: { x: 0.5, y: 0.6 },
   [FACE_REGIONS.T_ZONE]: { x: 0.5, y: 0.35 }
 };
 
