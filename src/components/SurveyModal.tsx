@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Globe, AlertCircle } from 'lucide-react';
 
 export interface UserProfile {
@@ -15,9 +15,10 @@ export interface UserProfile {
 interface SurveyModalProps {
     isOpen: boolean;
     onComplete: (profile: UserProfile) => void;
+    initialData?: UserProfile | null;
 }
 
-const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete }) => {
+const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete, initialData }) => {
     const [age, setAge] = useState<string>('');
     const [race, setRace] = useState<string>('');
     const [climate, setClimate] = useState<string>('');
@@ -26,6 +27,17 @@ const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete }) => {
     const [dryness, setDryness] = useState<number>(5);
     const [sensitivity, setSensitivity] = useState<number>(5);
     const [pigmentation, setPigmentation] = useState<number>(5);
+
+    useEffect(() => {
+        if (isOpen && initialData) {
+            setAge(initialData.age);
+            setRace(initialData.race);
+            setClimate(initialData.climate);
+            setDryness(initialData.skinConcerns?.dryness ?? 5);
+            setSensitivity(initialData.skinConcerns?.sensitivity ?? 5);
+            setPigmentation(initialData.skinConcerns?.pigmentation ?? 5);
+        }
+    }, [isOpen, initialData]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

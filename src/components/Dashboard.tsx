@@ -41,6 +41,22 @@ export default function Dashboard() {
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [showSurvey, setShowSurvey] = useState(true);
 
+    // 컴포넌트 마운트 시 로컬 스토리지에서 프로필 데이터 불러오기
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('faceHitmapUserProfile');
+            if (stored) {
+                try {
+                    const parsedProfile = JSON.parse(stored);
+                    setUserProfile(parsedProfile);
+                    setShowSurvey(false); // 저장된 데이터가 있으면 모달 숨김
+                } catch (e) {
+                    console.error("Failed to parse stored profile", e);
+                }
+            }
+        }
+    }, []);
+
     // 수동 입력용 State 추가
     const [manualMoisture, setManualMoisture] = useState<string>('');
     const [manualSebum, setManualSebum] = useState<string>('');
@@ -168,6 +184,9 @@ export default function Dashboard() {
     const handleSurveyComplete = (profile: UserProfile) => {
         setUserProfile(profile);
         setShowSurvey(false);
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('faceHitmapUserProfile', JSON.stringify(profile));
+        }
     };
 
     return (
@@ -175,6 +194,7 @@ export default function Dashboard() {
             <SurveyModal
                 isOpen={showSurvey}
                 onComplete={handleSurveyComplete}
+                initialData={userProfile}
             />
 
             {showReport && (
@@ -196,6 +216,17 @@ export default function Dashboard() {
                     <p className="text-slate-400">실시간 얼굴 부위별 수분 측정 및 분석</p>
                 </div>
                 <div className="flex gap-4 print:hidden">
+                    {userProfile && (
+                        <button
+                            onClick={() => setShowSurvey(true)}
+                            className="flex items-center gap-2 px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs border border-slate-700 transition-all text-cyan-400"
+                        >
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                            <span className="hidden sm:inline">프로필 수정</span>
+                        </button>
+                    )}
                     <div className="flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-lg text-xs border border-slate-700">
                         <ShieldCheck size={14} className={isSimulating ? "text-yellow-400" : "text-green-400"} />
                         <span>상태: {isSimulating ? '시뮬레이션 모드' : '실시간 모드'}</span>
