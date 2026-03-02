@@ -196,7 +196,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
             <div className="max-w-[1000px] max-h-[95vh] w-full bg-[#162031] rounded-[2rem] border border-[#2d3a4f] shadow-2xl flex flex-col md:flex-row overflow-hidden scale-in-95 animate-in fade-in duration-300">
 
                 {/* Left Column */}
-                <div className="md:w-[42%] bg-[#0f172a] p-6 lg:p-8 flex flex-col items-center border-b md:border-b-0 md:border-r border-[#2d3a4f] overflow-y-auto custom-scrollbar">
+                <div className="md:w-[42%] bg-[#0f172a] p-6 lg:p-8 flex flex-col items-center border-b md:border-b-0 md:border-r border-[#2d3a4f] overflow-y-auto overflow-x-hidden custom-scrollbar transform-gpu will-change-scroll overscroll-contain">
                     <div className="w-full flex items-center gap-2 text-[#22d3ee] text-[9px] font-bold uppercase tracking-widest mb-6 border-b border-white/5 pb-4">
                         <CheckCircle2 size={12} />
                         ANALYSIS COMPLETE
@@ -302,7 +302,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                 </div>
 
                 {/* Right Column */}
-                <div className="md:w-[58%] p-6 lg:p-10 flex flex-col overflow-y-auto custom-scrollbar">
+                <div className="md:w-[58%] p-6 lg:p-10 flex flex-col overflow-y-auto overflow-x-hidden custom-scrollbar transform-gpu will-change-scroll overscroll-contain">
                     <div className="mb-6 lg:mb-8">
                         <h2 className="text-3xl font-black mb-1.5 tracking-tighter text-white">스킨케어 분석 보고서</h2>
                         <p className="text-[#64748b] text-sm font-medium">부위별 정밀 수분 분포 결과입니다.</p>
