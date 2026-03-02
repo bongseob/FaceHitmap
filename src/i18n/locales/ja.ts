@@ -89,6 +89,8 @@ const ja: Translations = {
         aiRecommendation: 'AIエキスパート診断',
         aiAnalyzing: 'AIがお肌の状態を分析中です...',
         secondaryConditions: '副次的な状態',
+        moistureMap: '水分ヒートマップ',
+        sebumMap: '油分ヒートマップ',
     },
     recommendations: {
         richCreamName: 'リッチクリーム/バーム',

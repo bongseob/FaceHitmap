@@ -89,6 +89,8 @@ const ko: Translations = {
         aiRecommendation: 'AI 전문가 진단',
         aiAnalyzing: 'AI가 피부 상태를 분석 중입니다...',
         secondaryConditions: '부가 상태',
+        moistureMap: '수분 히트맵',
+        sebumMap: '유분 히트맵',
     },
     recommendations: {
         richCreamName: '리치 크림/밤 (Rich Cream/Balm)',

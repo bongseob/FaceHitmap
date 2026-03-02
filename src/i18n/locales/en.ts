@@ -89,6 +89,8 @@ const en: Translations = {
         aiRecommendation: 'AI Expert Diagnosis',
         aiAnalyzing: 'AI is analyzing your skin condition...',
         secondaryConditions: 'Secondary Conditions',
+        moistureMap: 'Moisture Map',
+        sebumMap: 'Sebum Map',
     },
     recommendations: {
         richCreamName: 'Rich Cream / Balm',

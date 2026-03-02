@@ -89,6 +89,8 @@ const zh: Translations = {
         aiRecommendation: 'AI专家诊断',
         aiAnalyzing: 'AI正在分析您的皮肤状态...',
         secondaryConditions: '附加状态',
+        moistureMap: '水分热图',
+        sebumMap: '油脂热图',
     },
     recommendations: {
         richCreamName: '滋润面霜/膏霜',

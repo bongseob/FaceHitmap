@@ -89,6 +89,8 @@ export interface Translations {
         aiRecommendation: string;
         aiAnalyzing: string;
         secondaryConditions: string;
+        moistureMap: string;
+        sebumMap: string;
     };
     recommendations: {
         richCreamName: string;

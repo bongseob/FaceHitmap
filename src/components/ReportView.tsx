@@ -20,6 +20,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
     const { t, locale } = useI18n();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [aiReason, setAiReason] = useState<string>("");
+    const [heatmapMode, setHeatmapMode] = useState<'moisture' | 'sebum'>('moisture');
 
     const hydrationValues = Object.values(hydrationData);
     const averageHydration = hydrationValues.length > 0
@@ -53,37 +54,45 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
         const height = canvasRef.current.height;
         ctx.clearRect(0, 0, width, height);
 
-        // Thermal Color Map function: Blue (0) -> Green (50) -> Red (100)
-        const getThermalColor = (value: number, alpha: number = 1) => {
+        // Moisture Color Map: Blue (0) -> Green (50) -> Red (100)
+        const getMoistureColor = (value: number, alpha: number = 1) => {
             const v = Math.max(0, Math.min(100, value));
             let r, g, b;
 
-            if (v < 25) { // Blue to Cyan
-                r = 0; g = v * 4 * 2.55; b = 255;
-            } else if (v < 50) { // Cyan to Green
-                r = 0; g = 255; b = (50 - v) * 4 * 2.55;
-            } else if (v < 75) { // Green to Yellow
-                r = (v - 50) * 4 * 2.55; g = 255; b = 0;
-            } else { // Yellow to Red
-                r = 255; g = (100 - v) * 4 * 2.55; b = 0;
-            }
+            if (v < 25) { r = 0; g = v * 4 * 2.55; b = 255; }
+            else if (v < 50) { r = 0; g = 255; b = (50 - v) * 4 * 2.55; }
+            else if (v < 75) { r = (v - 50) * 4 * 2.55; g = 255; b = 0; }
+            else { r = 255; g = (100 - v) * 4 * 2.55; b = 0; }
             return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${alpha})`;
         };
 
+        // Sebum Color Map: Light Yellow (0) -> Orange (50) -> Deep Red (100)
+        const getSebumColor = (value: number, alpha: number = 1) => {
+            const v = Math.max(0, Math.min(100, value));
+            let r, g, b;
+
+            if (v < 33) { r = 255; g = 240 - v * 2; b = 100 - v * 2; }
+            else if (v < 66) { r = 255; g = 180 - (v - 33) * 3; b = 40 - (v - 33); }
+            else { r = 255 - (v - 66) * 2; g = 80 - (v - 66) * 2; b = 10; }
+            return `rgba(${Math.round(Math.max(0, r))}, ${Math.round(Math.max(0, g))}, ${Math.round(Math.max(0, b))}, ${alpha})`;
+        };
+
+        // Select color function and data field based on mode
+        const getColor = heatmapMode === 'moisture' ? getMoistureColor : getSebumColor;
+        const dataField = heatmapMode === 'moisture' ? 'moisture' : 'sebum';
+
         const drawOverlaysAndHeatmap = () => {
-            // 2. Draw Thermal Heatmap (Smooth continuous gradients)
-            // We draw multiple overlapping radial gradients
+            // Draw Thermal Heatmap (Smooth continuous gradients)
             Object.entries(drawingLandmarks).forEach(([region, point]: [string, any]) => {
                 const x = point.x * width;
                 const y = point.y * height;
-                // 배경 히트맵 컬러는 직관적인 '수분' 베이스로 그립니다
-                const value = hydrationData[region]?.moisture || (landmarks ? 0 : 50);
+                const value = hydrationData[region]?.[dataField] || (landmarks ? 0 : 50);
 
                 const radius = 100; // Larger radius for more overlap
                 const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
-                grad.addColorStop(0, getThermalColor(value, 0.6));
-                grad.addColorStop(0.6, getThermalColor(value, 0.2));
-                grad.addColorStop(1, getThermalColor(value, 0));
+                grad.addColorStop(0, getColor(value, 0.6));
+                grad.addColorStop(0.6, getColor(value, 0.2));
+                grad.addColorStop(1, getColor(value, 0));
 
                 ctx.globalCompositeOperation = 'screen';
                 ctx.fillStyle = grad;
@@ -125,11 +134,11 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
             const scaleHeight = height * 0.6;
 
             const scaleGradient = ctx.createLinearGradient(0, scaleY + scaleHeight, 0, scaleY);
-            scaleGradient.addColorStop(0, getThermalColor(0));
-            scaleGradient.addColorStop(0.25, getThermalColor(25));
-            scaleGradient.addColorStop(0.5, getThermalColor(50));
-            scaleGradient.addColorStop(0.75, getThermalColor(75));
-            scaleGradient.addColorStop(1, getThermalColor(100));
+            scaleGradient.addColorStop(0, getColor(0));
+            scaleGradient.addColorStop(0.25, getColor(25));
+            scaleGradient.addColorStop(0.5, getColor(50));
+            scaleGradient.addColorStop(0.75, getColor(75));
+            scaleGradient.addColorStop(1, getColor(100));
 
             ctx.fillStyle = scaleGradient;
             ctx.fillRect(scaleX, scaleY, scaleWidth, scaleHeight);
@@ -192,7 +201,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
         // Draw Heatmap and Overlays (which will naturally be masked inside the face)
         drawOverlaysAndHeatmap();
 
-    }, [landmarks, hydrationData, faceType]);
+    }, [landmarks, hydrationData, faceType, heatmapMode]);
 
     return (
         <div className="fixed inset-0 bg-[#0b121ecf] backdrop-blur-md z-50 flex items-center justify-center p-0 md:p-4 overflow-hidden print:static print:inset-auto print:bg-[#0b121e] print:p-0 print:overflow-visible print:block">
@@ -203,6 +212,28 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                     <div className="w-full flex items-center gap-2 text-[#22d3ee] text-[9px] font-bold uppercase tracking-widest mb-6 border-b border-white/5 pb-4">
                         <CheckCircle2 size={12} />
                         {t.report.analysisComplete}
+                    </div>
+
+                    {/* Heatmap Mode Toggle Tabs */}
+                    <div className="w-full flex gap-1.5 mb-3">
+                        <button
+                            onClick={() => setHeatmapMode('moisture')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold tracking-wide transition-all border ${heatmapMode === 'moisture'
+                                    ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.15)]'
+                                    : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
+                                }`}
+                        >
+                            💧 {t.report.moistureMap}
+                        </button>
+                        <button
+                            onClick={() => setHeatmapMode('sebum')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold tracking-wide transition-all border ${heatmapMode === 'sebum'
+                                    ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-300 shadow-[0_0_12px_rgba(234,179,8,0.15)]'
+                                    : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
+                                }`}
+                        >
+                            💛 {t.report.sebumMap}
+                        </button>
                     </div>
 
                     <div className="w-full shrink-0 relative bg-black rounded-[1.5rem] border border-[#2d3a4f] mb-6 flex items-center justify-center overflow-hidden shadow-inner group py-4">
