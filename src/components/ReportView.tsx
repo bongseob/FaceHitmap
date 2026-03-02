@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Download, RefreshCw, CheckCircle2, Sparkles, Beaker, Activity, BrainCircuit } from 'lucide-react';
+import { Download, RefreshCw, CheckCircle2, Sparkles, Beaker, Activity, BrainCircuit, Sun, Moon, Dna } from 'lucide-react';
 import { REGION_COLORS, FACE_REGIONS, DEFAULT_LANDMARKS, SensorData } from '../utils/constants';
 import { getAdvancedRecommendations } from '../utils/recommendations';
-import { getAIRecommendation } from '../services/GeminiService';
+import { getAIRecommendation, getSkincareRoutine, getSkinAge, SkincareRoutine, SkinAgeResult } from '../services/GeminiService';
 import { UserProfile } from './SurveyModal';
 import { useI18n } from '../i18n/I18nContext';
 
@@ -21,6 +21,9 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [aiReason, setAiReason] = useState<string>("");
     const [heatmapMode, setHeatmapMode] = useState<'moisture' | 'sebum'>('moisture');
+    const [skinAgeResult, setSkinAgeResult] = useState<SkinAgeResult | null>(null);
+    const [routine, setRoutine] = useState<SkincareRoutine | null>(null);
+    const [routineTab, setRoutineTab] = useState<'morning' | 'evening'>('morning');
 
     const hydrationValues = Object.values(hydrationData);
     const averageHydration = hydrationValues.length > 0
@@ -40,6 +43,20 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
             setAiReason(reason);
         };
         fetchAI();
+
+        // Fetch Skin Age
+        const fetchSkinAge = async () => {
+            const result = await getSkinAge(hydrationData, userProfile, locale);
+            setSkinAgeResult(result);
+        };
+        fetchSkinAge();
+
+        // Fetch Skincare Routine
+        const fetchRoutine = async () => {
+            const result = await getSkincareRoutine(hydrationData, faceType, userProfile, locale);
+            setRoutine(result);
+        };
+        fetchRoutine();
     }, [hydrationData, faceType, userProfile, locale]);
 
     useEffect(() => {
@@ -219,8 +236,8 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                         <button
                             onClick={() => setHeatmapMode('moisture')}
                             className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold tracking-wide transition-all border ${heatmapMode === 'moisture'
-                                    ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.15)]'
-                                    : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
+                                ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.15)]'
+                                : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
                                 }`}
                         >
                             💧 {t.report.moistureMap}
@@ -228,8 +245,8 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                         <button
                             onClick={() => setHeatmapMode('sebum')}
                             className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold tracking-wide transition-all border ${heatmapMode === 'sebum'
-                                    ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-300 shadow-[0_0_12px_rgba(234,179,8,0.15)]'
-                                    : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
+                                ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-300 shadow-[0_0_12px_rgba(234,179,8,0.15)]'
+                                : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
                                 }`}
                         >
                             💛 {t.report.sebumMap}
@@ -379,6 +396,50 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                             </div>
                         </div>
 
+                        {/* Skin Age Gauge Card */}
+                        <div className="bg-gradient-to-br from-[#1e1b4b]/40 to-[#1e293b]/30 p-5 rounded-[1.5rem] border border-[#312e81]/30 relative overflow-hidden">
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="p-1.5 bg-purple-500/10 rounded-lg">
+                                    <Dna size={16} className="text-purple-400" />
+                                </div>
+                                <h4 className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-[0.15em]">{t.report.skinAge}</h4>
+                            </div>
+                            {skinAgeResult ? (
+                                <>
+                                    <div className="flex items-end justify-between mb-3">
+                                        <div className="flex flex-col">
+                                            <span className="text-[9px] text-[#64748b] font-bold uppercase tracking-wider mb-1">{t.report.actualAge}</span>
+                                            <span className="text-2xl font-black text-white/60">{skinAgeResult.actualAge}</span>
+                                        </div>
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-[9px] text-[#64748b] font-bold uppercase tracking-wider mb-1">{t.report.estimatedSkinAge}</span>
+                                            <span className={`text-3xl font-black ${skinAgeResult.difference >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                                {skinAgeResult.skinAge}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {/* Gauge Bar */}
+                                    <div className="relative w-full h-3 bg-[#0b121e] rounded-full overflow-hidden border border-white/[0.03] mb-3">
+                                        <div className="absolute inset-0 flex">
+                                            <div className="h-full bg-gradient-to-r from-emerald-500 via-cyan-400 to-emerald-400 transition-all duration-1000" style={{ width: `${Math.max(5, Math.min(95, ((skinAgeResult.actualAge - skinAgeResult.skinAge + 15) / 30) * 100))}%` }} />
+                                        </div>
+                                        <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg shadow-white/20 border-2 border-purple-400 transition-all duration-1000" style={{ left: `${Math.max(2, Math.min(95, ((skinAgeResult.actualAge - skinAgeResult.skinAge + 15) / 30) * 100))}%` }} />
+                                    </div>
+                                    {skinAgeResult.difference !== 0 && (
+                                        <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold mb-2 ${skinAgeResult.difference > 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
+                                            {skinAgeResult.difference > 0 ? '↓' : '↑'} {Math.abs(skinAgeResult.difference)}
+                                        </div>
+                                    )}
+                                    <p className="text-[10px] text-[#94a3b8] leading-relaxed">{skinAgeResult.verdict}</p>
+                                </>
+                            ) : (
+                                <div className="flex items-center gap-2 py-4">
+                                    <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+                                    <span className="text-[11px] text-[#64748b]">{t.report.skinAgeAnalyzing}</span>
+                                </div>
+                            )}
+                        </div>
+
                         <p className="text-[11px] text-[#64748b] leading-relaxed w-full bg-[#1e293b]/20 p-4 rounded-xl border border-[#2d3a4f]/50">
                             {t.report.skinType}: <span className="text-[#22d3ee] font-bold">{averageHydration}%</span> {t.common.moisture}, <span className="text-[#fbbf24] font-bold">{averageSebum}%</span> {t.common.sebum} — {t.report.complexType}{' '}
                             {averageSebum > 60 && averageHydration < 40 ? t.report.dehydratedOily : averageSebum > 60 ? t.report.oilySkin : averageHydration < 40 ? t.report.drySkin : t.report.balancedSkin}
@@ -413,6 +474,67 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                     </div>
                                 );
                             })}
+                        </div>
+
+                        {/* Skincare Routine Section */}
+                        <div className="bg-[#1e293b]/30 p-5 rounded-[1.5rem] border border-[#2d3a4f]">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Sparkles size={14} className="text-amber-400" />
+                                <h4 className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-[0.15em]">{t.report.skincareRoutine}</h4>
+                            </div>
+
+                            {/* Morning / Evening Tabs */}
+                            <div className="flex gap-1.5 mb-4">
+                                <button
+                                    onClick={() => setRoutineTab('morning')}
+                                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold tracking-wide transition-all border ${routineTab === 'morning'
+                                            ? 'bg-amber-500/15 border-amber-500/40 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.1)]'
+                                            : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
+                                        }`}
+                                >
+                                    <Sun size={12} /> {t.report.morningRoutine}
+                                </button>
+                                <button
+                                    onClick={() => setRoutineTab('evening')}
+                                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold tracking-wide transition-all border ${routineTab === 'evening'
+                                            ? 'bg-indigo-500/15 border-indigo-500/40 text-indigo-300 shadow-[0_0_12px_rgba(99,102,241,0.1)]'
+                                            : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
+                                        }`}
+                                >
+                                    <Moon size={12} /> {t.report.eveningRoutine}
+                                </button>
+                            </div>
+
+                            {/* Steps */}
+                            {routine ? (
+                                <div className="space-y-2.5">
+                                    {(routineTab === 'morning' ? routine.morning : routine.evening).map((step) => (
+                                        <div key={step.order} className="flex gap-3 items-start bg-[#0f172a]/40 p-3 rounded-xl border border-[#2d3a4f]/50 hover:border-[#2d3a4f] transition-colors">
+                                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-black shrink-0 ${routineTab === 'morning'
+                                                    ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                                                    : 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30'
+                                                }`}>
+                                                {step.order}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between mb-0.5">
+                                                    <span className="text-[12px] font-bold text-white">{step.step}</span>
+                                                    <span className="text-[9px] px-1.5 py-0.5 bg-purple-900/30 text-purple-300 rounded font-medium">{step.ingredient}</span>
+                                                </div>
+                                                <div className="text-[10px] text-[#64748b] mb-1">{step.product}</div>
+                                                <div className="text-[9px] text-cyan-400/70 flex items-center gap-1">
+                                                    <span className="opacity-60">→</span> {step.tip}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2 py-6 justify-center">
+                                    <div className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                                    <span className="text-[11px] text-[#64748b]">{t.report.routineAnalyzing}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
 

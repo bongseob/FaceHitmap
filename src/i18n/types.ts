@@ -91,6 +91,18 @@ export interface Translations {
         secondaryConditions: string;
         moistureMap: string;
         sebumMap: string;
+        skincareRoutine: string;
+        morningRoutine: string;
+        eveningRoutine: string;
+        skinAge: string;
+        actualAge: string;
+        estimatedSkinAge: string;
+        skinAgeAnalyzing: string;
+        routineAnalyzing: string;
+        skinAgeYounger: string;
+        skinAgeOlder: string;
+        skinAgeSame: string;
+        stepTip: string;
     };
     recommendations: {
         richCreamName: string;
