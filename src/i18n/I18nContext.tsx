@@ -29,9 +29,9 @@ interface I18nContextType {
 }
 
 const I18nContext = createContext<I18nContextType>({
-    locale: 'en',
+    locale: 'ko',
     setLocale: () => { },
-    t: en,
+    t: ko,
 });
 
 export const SUPPORTED_LOCALES: { code: Locale; label: string; flag: string }[] = [
@@ -42,10 +42,14 @@ export const SUPPORTED_LOCALES: { code: Locale; label: string; flag: string }[] 
 ];
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-    const [locale, setLocaleState] = useState<Locale>('en');
+    // Use a fixed default for both server and client initial render to avoid hydration mismatch
+    const [locale, setLocaleState] = useState<Locale>('ko');
+    const [isHydrated, setIsHydrated] = useState(false);
 
     useEffect(() => {
+        // After hydration, detect and apply the real locale
         setLocaleState(detectLocale());
+        setIsHydrated(true);
     }, []);
 
     const setLocale = useCallback((newLocale: Locale) => {
