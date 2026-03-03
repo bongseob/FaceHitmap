@@ -35,6 +35,13 @@ const en: Translations = {
         sebumValidation: 'Please enter a sebum value between 0 and 100.',
         step: 'STEP',
         of: '/',
+        alignFace: 'Align your face within the guide',
+        readyToCapture: 'Ready to capture',
+        capture: 'Capture',
+        retake: 'Retake',
+        startMeasurement: 'Start Measurement',
+        faceDetected: 'Face detected',
+        photoPreview: 'Photo Preview',
         regions: {
             forehead: 'Forehead',
             leftCheek: 'Left Cheek',

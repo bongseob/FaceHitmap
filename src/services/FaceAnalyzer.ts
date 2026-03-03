@@ -93,4 +93,36 @@ export class FaceAnalyzer {
         if (ratio < 0.75) return 'Long / Oval';
         return 'Oval / Heart';
     }
+
+    /**
+     * Check if the detected face fits within the guide ellipse bounds.
+     * Guide ellipse: center (0.5, 0.45), rx=0.22, ry=0.32 (normalized coords)
+     */
+    public isFaceInBounds(landmarks: any[]): boolean {
+        if (!landmarks || landmarks.length === 0) return false;
+
+        // Guide ellipse parameters (matching FaceGuideOverlay SVG)
+        const cx = 0.5, cy = 0.45, rx = 0.22, ry = 0.32;
+
+        // Key face boundary points: top of head, chin, left cheek, right cheek
+        const keyPoints = [
+            landmarks[10],   // forehead top
+            landmarks[152],  // chin
+            landmarks[234],  // left ear
+            landmarks[454],  // right ear
+        ];
+
+        // Check each key point is inside the ellipse
+        for (const pt of keyPoints) {
+            const dx = (pt.x - cx) / rx;
+            const dy = (pt.y - cy) / ry;
+            if (dx * dx + dy * dy > 1.15) return false; // 15% tolerance
+        }
+
+        // Check face is large enough (not too far away)
+        const faceWidth = Math.abs(landmarks[234].x - landmarks[454].x);
+        if (faceWidth < 0.15) return false;
+
+        return true;
+    }
 }

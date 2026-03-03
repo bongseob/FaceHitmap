@@ -35,6 +35,13 @@ const ko: Translations = {
         sebumValidation: '유분을 0에서 100 사이의 숫자로 입력해주세요.',
         step: 'STEP',
         of: '/',
+        alignFace: '얼굴을 가이드에 맞춰주세요',
+        readyToCapture: '촬영 가능합니다',
+        capture: '촬영',
+        retake: '다시 촬영',
+        startMeasurement: '측정 시작',
+        faceDetected: '얼굴 감지됨',
+        photoPreview: '촬영 확인',
         regions: {
             forehead: '이마',
             leftCheek: '왼쪽 볼',

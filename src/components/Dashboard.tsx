@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Upload, Bluetooth, Activity, ShieldCheck, CheckCircle, Globe } from 'lucide-react';
+import { Camera, Upload, Bluetooth, Activity, ShieldCheck, CheckCircle, Globe, CameraOff, RotateCcw, ArrowRight } from 'lucide-react';
 import HeatmapCanvas from '../components/HeatmapCanvas';
+import FaceGuideOverlay from '../components/FaceGuideOverlay';
 import ReportView from '../components/ReportView';
 import { useBluetoothDevice } from '../hooks/useBluetoothDevice';
 import { FaceAnalyzer, SegmentedData, FaceOvalData } from '../services/FaceAnalyzer';
@@ -38,9 +39,12 @@ export default function Dashboard() {
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [faceType, setFaceType] = useState<string | null>(null);
     const [isCameraActive, setIsCameraActive] = useState(false);
-    const [isSimulatingCamera, setIsSimulatingCamera] = useState(false); // 시뮬레이션 상태 추가
+    const [isSimulatingCamera, setIsSimulatingCamera] = useState(false);
     const [showReport, setShowReport] = useState(false);
     const [hasMeasured, setHasMeasured] = useState(false);
+    const [cameraPhase, setCameraPhase] = useState<'shooting' | 'preview' | 'measuring'>('shooting');
+    const [capturedImage, setCapturedImage] = useState<string | null>(null);
+    const [isFaceInGuide, setIsFaceInGuide] = useState(false);
 
     // 사용자 프로필 및 설문 상태
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -121,12 +125,17 @@ export default function Dashboard() {
         try {
             setIsCameraActive(true);
             setIsSimulatingCamera(false);
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            setCameraPhase('shooting');
+            setCapturedImage(null);
+            setIsFaceInGuide(false);
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
+            });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
                 videoRef.current.onloadedmetadata = () => {
                     videoRef.current?.play();
-                    startAnalysis();
+                    startFaceDetection();
                 };
             }
         } catch (err) {
@@ -138,37 +147,79 @@ export default function Dashboard() {
     const handleSimulateScan = () => {
         setIsCameraActive(true);
         setIsSimulatingCamera(true);
+        setCameraPhase('measuring');
+        setCapturedImage(null);
 
-        // 시뮬레이션 시 1.5초 후 자동으로 가짜 데이터 주입
         setTimeout(() => {
             import('../utils/constants').then(({ DEFAULT_LANDMARKS }) => {
                 setLandmarks(DEFAULT_LANDMARKS as any);
-                setFaceType('Oval / Heart'); // 기본 얼굴형 세팅
+                setFaceType('Oval / Heart');
             });
         }, 1500);
     };
 
-    const startAnalysis = async () => {
+    // Face detection loop for guide-only (no measurement yet)
+    const startFaceDetection = async () => {
         if (!videoRef.current || !analyzerRef.current) return;
 
-        const runAnalysis = async () => {
-            if (!isCameraActive || isSimulatingCamera || !analyzerRef.current || !videoRef.current || showReport) return;
-
+        const runDetection = async () => {
+            if (!videoRef.current || !analyzerRef.current) return;
+            // Only run during shooting phase
             const result = await analyzerRef.current.analyze(videoRef.current);
             if (result) {
-                setLandmarks(result.segmentedData);
-                setFaceOval(result.faceOval);
-                if (!faceType) {
-                    setFaceType(analyzerRef.current.matchTemplate(result.landmarks));
-                }
+                const inBounds = analyzerRef.current.isFaceInBounds(result.landmarks);
+                setIsFaceInGuide(inBounds);
+            } else {
+                setIsFaceInGuide(false);
             }
-
-            if (isCameraActive && !showReport) {
-                requestAnimationFrame(runAnalysis);
-            }
+            // Continue detection loop only during shooting phase
+            requestAnimationFrame(runDetection);
         };
 
-        runAnalysis();
+        runDetection();
+    };
+
+    // Capture still photo
+    const handleCapture = async () => {
+        if (!videoRef.current || !analyzerRef.current) return;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = videoRef.current.videoWidth;
+        canvas.height = videoRef.current.videoHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.drawImage(videoRef.current, 0, 0);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        setCapturedImage(dataUrl);
+
+        // Analyze the captured frame
+        const result = await analyzerRef.current.analyze(videoRef.current);
+        if (result) {
+            setLandmarks(result.segmentedData);
+            setFaceOval(result.faceOval);
+            setFaceType(analyzerRef.current.matchTemplate(result.landmarks));
+        }
+
+        // Stop camera stream
+        if (videoRef.current.srcObject) {
+            (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
+        }
+
+        setCameraPhase('preview');
+    };
+
+    // Retake photo
+    const handleRetake = () => {
+        setCapturedImage(null);
+        setFaceType(null);
+        setLandmarks(null);
+        setFaceOval(null);
+        handleCameraStart();
+    };
+
+    // Move from preview to measurement
+    const handleStartMeasurement = () => {
+        setCameraPhase('measuring');
     };
 
     const handleComplete = () => {
@@ -191,6 +242,9 @@ export default function Dashboard() {
         setFaceOval(null);
         setFaceType(null);
         setIsSimulatingCamera(false);
+        setCameraPhase('shooting');
+        setCapturedImage(null);
+        setIsFaceInGuide(false);
         disconnect();
     };
 
@@ -306,7 +360,77 @@ export default function Dashboard() {
                                 </button>
                             </div>
                         </div>
+
+                    ) : cameraPhase === 'shooting' ? (
+                        /* Phase 1: Shooting — Camera + Guide Overlay */
+                        <>
+                            <video
+                                ref={videoRef}
+                                className="w-full h-full object-cover z-0 relative"
+                                autoPlay
+                                muted
+                                playsInline
+                                style={{ transform: 'scaleX(-1)' }}
+                            />
+                            <FaceGuideOverlay
+                                isFaceDetected={isFaceInGuide}
+                                onCapture={handleCapture}
+                            />
+                            <button
+                                onClick={() => {
+                                    setIsCameraActive(false);
+                                    if (videoRef.current?.srcObject) {
+                                        (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
+                                    }
+                                }}
+                                className="absolute top-4 right-4 z-20 px-3 py-1 bg-red-600/30 hover:bg-red-600/80 rounded-lg text-xs transition-all border border-red-500/30"
+                            >
+                                {t.dashboard.stopCamera}
+                            </button>
+                        </>
+
+                    ) : cameraPhase === 'preview' ? (
+                        /* Phase 2: Preview — Captured image + face type result */
+                        <>
+                            {capturedImage && (
+                                <img
+                                    src={capturedImage}
+                                    alt="Captured face"
+                                    className="w-full h-full object-cover"
+                                    style={{ transform: 'scaleX(-1)' }}
+                                />
+                            )}
+                            <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center z-10">
+                                <div className="bg-slate-900/90 backdrop-blur-xl rounded-2xl p-6 border border-slate-700 shadow-2xl text-center max-w-xs">
+                                    <div className="text-[10px] text-slate-400 uppercase tracking-widest mb-2">{t.dashboard.photoPreview}</div>
+                                    {faceType && (
+                                        <div className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-br from-purple-400 to-pink-500 mb-1">
+                                            {faceType}
+                                        </div>
+                                    )}
+                                    <div className="h-px bg-slate-700 my-3" />
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={handleRetake}
+                                            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-bold border border-slate-600 transition-all"
+                                        >
+                                            <RotateCcw size={14} />
+                                            {t.dashboard.retake}
+                                        </button>
+                                        <button
+                                            onClick={handleStartMeasurement}
+                                            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-cyan-600 hover:bg-cyan-500 rounded-xl text-sm font-bold shadow-lg shadow-cyan-900/30 transition-all"
+                                        >
+                                            {t.dashboard.startMeasurement}
+                                            <ArrowRight size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </>
+
                     ) : (
+                        /* Phase 3: Measuring — Existing sensor measurement UI */
                         <>
                             {isSimulatingCamera ? (
                                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 z-0">
@@ -315,15 +439,14 @@ export default function Dashboard() {
                                         <span className="text-xs text-indigo-500/50 uppercase tracking-widest font-mono text-center">Simulated<br />Face Data</span>
                                     </div>
                                 </div>
-                            ) : (
-                                <video
-                                    ref={videoRef}
-                                    className="w-full h-full object-cover opacity-60 grayscale-[30%] z-0 relative"
-                                    autoPlay
-                                    muted
-                                    playsInline
+                            ) : capturedImage ? (
+                                <img
+                                    src={capturedImage}
+                                    alt="Captured face"
+                                    className="w-full h-full object-cover opacity-40 z-0"
+                                    style={{ transform: 'scaleX(-1)' }}
                                 />
-                            )}
+                            ) : null}
                             <HeatmapCanvas
                                 landmarks={landmarks}
                                 hydrationData={hydrationData}

@@ -35,6 +35,13 @@ const ja: Translations = {
         sebumValidation: '油分値を0から100の間で入力してください。',
         step: 'ステップ',
         of: '/',
+        alignFace: 'ガイドに顔を合わせてください',
+        readyToCapture: '撮影可能です',
+        capture: '撮影',
+        retake: '撮り直し',
+        startMeasurement: '測定開始',
+        faceDetected: '顔を検出しました',
+        photoPreview: '写真確認',
         regions: {
             forehead: '額',
             leftCheek: '左頬',

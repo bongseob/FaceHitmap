@@ -35,6 +35,13 @@ const zh: Translations = {
         sebumValidation: '请输入0到100之间的油脂值。',
         step: '步骤',
         of: '/',
+        alignFace: '请将脸部对准引导框',
+        readyToCapture: '可以拍照了',
+        capture: '拍照',
+        retake: '重新拍照',
+        startMeasurement: '开始测量',
+        faceDetected: '已检测到面部',
+        photoPreview: '照片确认',
         regions: {
             forehead: '额头',
             leftCheek: '左脸颊',

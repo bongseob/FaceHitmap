@@ -35,6 +35,13 @@ export interface Translations {
         sebumValidation: string;
         step: string;
         of: string;
+        alignFace: string;
+        readyToCapture: string;
+        capture: string;
+        retake: string;
+        startMeasurement: string;
+        faceDetected: string;
+        photoPreview: string;
         regions: {
             forehead: string;
             leftCheek: string;
