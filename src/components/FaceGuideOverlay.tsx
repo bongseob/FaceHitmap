@@ -19,7 +19,7 @@ export default function FaceGuideOverlay({ isFaceDetected, onCapture }: FaceGuid
                 <defs>
                     <mask id="guideMask">
                         <rect x="0" y="0" width="100" height="100" fill="white" />
-                        <ellipse cx="50" cy="46" rx="15" ry="34" fill="black" />
+                        <ellipse cx="50" cy="46" rx="28" ry="40" fill="black" />
                     </mask>
                 </defs>
                 <rect x="0" y="0" width="100" height="100" fill="rgba(0,0,0,0.6)" mask="url(#guideMask)" />
@@ -30,8 +30,8 @@ export default function FaceGuideOverlay({ isFaceDetected, onCapture }: FaceGuid
                 <ellipse
                     cx="50"
                     cy="46"
-                    rx="15"
-                    ry="34"
+                    rx="28"
+                    ry="40"
                     fill="none"
                     stroke={isFaceDetected ? '#22c55e' : '#f87171'}
                     strokeWidth="0.4"
@@ -40,10 +40,10 @@ export default function FaceGuideOverlay({ isFaceDetected, onCapture }: FaceGuid
                 />
                 {/* Corner markers */}
                 {[
-                    { x: 35, y: 12 },
-                    { x: 65, y: 12 },
-                    { x: 35, y: 80 },
-                    { x: 65, y: 80 },
+                    { x: 22, y: 6 },
+                    { x: 78, y: 6 },
+                    { x: 22, y: 86 },
+                    { x: 78, y: 86 },
                 ].map((pos, i) => (
                     <circle
                         key={i}

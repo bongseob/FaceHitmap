@@ -447,12 +447,14 @@ export default function Dashboard() {
                                     style={{ transform: 'scaleX(-1)' }}
                                 />
                             ) : null}
-                            <HeatmapCanvas
-                                landmarks={landmarks}
-                                hydrationData={hydrationData}
-                                width={1280}
-                                height={720}
-                            />
+                            <div className="hidden md:block">
+                                <HeatmapCanvas
+                                    landmarks={landmarks}
+                                    hydrationData={hydrationData}
+                                    width={1280}
+                                    height={720}
+                                />
+                            </div>
                             <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-lg text-[10px] text-slate-300 border border-white/10">
                                 SCANNED: {faceType || 'PENDING...'}
                             </div>

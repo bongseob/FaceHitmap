@@ -102,7 +102,7 @@ export class FaceAnalyzer {
         if (!landmarks || landmarks.length === 0) return false;
 
         // Guide ellipse parameters (matching FaceGuideOverlay SVG)
-        const cx = 0.5, cy = 0.46, rx = 0.15, ry = 0.34;
+        const cx = 0.5, cy = 0.46, rx = 0.28, ry = 0.40;
 
         // Key face boundary points: top of head, chin, left cheek, right cheek
         const keyPoints = [
@@ -116,7 +116,7 @@ export class FaceAnalyzer {
         for (const pt of keyPoints) {
             const dx = (pt.x - cx) / rx;
             const dy = (pt.y - cy) / ry;
-            if (dx * dx + dy * dy > 1.15) return false; // 15% tolerance
+            if (dx * dx + dy * dy > 1.3) return false; // 30% tolerance
         }
 
         // Check face is large enough (not too far away)
