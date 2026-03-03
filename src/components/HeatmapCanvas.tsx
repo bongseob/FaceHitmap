@@ -44,6 +44,7 @@ const HeatmapCanvas: React.FC<HeatmapCanvasProps> = ({ landmarks, hydrationData,
             width={width}
             height={height}
             className="absolute top-0 left-0 pointer-events-none"
+            style={{ transform: 'scaleX(-1)' }}
         />
     );
 };

@@ -102,7 +102,7 @@ export class FaceAnalyzer {
         if (!landmarks || landmarks.length === 0) return false;
 
         // Guide ellipse parameters (matching FaceGuideOverlay SVG)
-        const cx = 0.5, cy = 0.45, rx = 0.22, ry = 0.32;
+        const cx = 0.5, cy = 0.46, rx = 0.15, ry = 0.34;
 
         // Key face boundary points: top of head, chin, left cheek, right cheek
         const keyPoints = [
