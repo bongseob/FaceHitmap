@@ -222,10 +222,10 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
 
     return (
         <div className="fixed inset-0 bg-[#0b121ecf] backdrop-blur-md z-50 flex items-center justify-center p-0 md:p-4 overflow-hidden print:static print:inset-auto print:bg-[#0b121e] print:p-0 print:overflow-visible print:block">
-            <div className="max-w-[1000px] max-h-[95vh] w-full bg-[#162031] rounded-[2rem] border border-[#2d3a4f] shadow-2xl flex flex-col md:flex-row overflow-hidden scale-in-95 animate-in fade-in duration-300 print:!max-w-full print:!max-h-none print:!w-full print:!rounded-none print:!border-none print:!shadow-none print:flex-col print:overflow-visible print:!h-auto print:scale-100 print:!p-0 print:!m-0">
+            <div className="max-w-[1000px] max-h-[100vh] md:max-h-[95vh] w-full bg-[#162031] md:rounded-[2rem] border border-[#2d3a4f] shadow-2xl flex flex-col md:flex-row overflow-y-auto md:overflow-hidden scale-in-95 animate-in fade-in duration-300 print:!max-w-full print:!max-h-none print:!w-full print:!rounded-none print:!border-none print:!shadow-none print:flex-col print:overflow-visible print:!h-auto print:scale-100 print:!p-0 print:!m-0">
 
                 {/* Left Column */}
-                <div className="md:w-[42%] bg-[#0f172a] p-6 lg:p-8 flex flex-col items-center border-b md:border-b-0 md:border-r border-[#2d3a4f] overflow-y-auto overflow-x-hidden custom-scrollbar transform-gpu will-change-scroll overscroll-contain print:!w-full print:!h-auto print:overflow-visible print:!border-none print:p-4">
+                <div className="md:w-[42%] bg-[#0f172a] p-6 lg:p-8 flex flex-col items-center border-b md:border-b-0 md:border-r border-[#2d3a4f] overflow-visible md:overflow-y-auto overflow-x-hidden custom-scrollbar md:transform-gpu md:will-change-scroll md:overscroll-contain print:!w-full print:!h-auto print:overflow-visible print:!border-none print:p-4">
                     <div className="w-full flex items-center gap-2 text-[#22d3ee] text-[9px] font-bold uppercase tracking-widest mb-6 border-b border-white/5 pb-4">
                         <CheckCircle2 size={12} />
                         {t.report.analysisComplete}
@@ -353,7 +353,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                 </div>
 
                 {/* Right Column */}
-                <div className="md:w-[58%] p-6 lg:p-10 flex flex-col overflow-y-auto overflow-x-hidden custom-scrollbar transform-gpu will-change-scroll overscroll-contain print:!w-full print:!h-auto print:overflow-visible print:p-4 print:mt-4">
+                <div className="md:w-[58%] p-6 lg:p-10 flex flex-col overflow-visible md:overflow-y-auto overflow-x-hidden custom-scrollbar md:transform-gpu md:will-change-scroll md:overscroll-contain print:!w-full print:!h-auto print:overflow-visible print:p-4 print:mt-4">
                     <div className="mb-6 lg:mb-8">
                         <h2 className="text-3xl font-black mb-1.5 tracking-tighter text-white print:text-gray-900">{t.report.reportTitle}</h2>
                         <p className="text-[#64748b] text-sm font-medium">{t.report.reportSubtitle}</p>
@@ -488,8 +488,8 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                 <button
                                     onClick={() => setRoutineTab('morning')}
                                     className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold tracking-wide transition-all border ${routineTab === 'morning'
-                                            ? 'bg-amber-500/15 border-amber-500/40 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.1)]'
-                                            : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
+                                        ? 'bg-amber-500/15 border-amber-500/40 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.1)]'
+                                        : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
                                         }`}
                                 >
                                     <Sun size={12} /> {t.report.morningRoutine}
@@ -497,8 +497,8 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                 <button
                                     onClick={() => setRoutineTab('evening')}
                                     className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold tracking-wide transition-all border ${routineTab === 'evening'
-                                            ? 'bg-indigo-500/15 border-indigo-500/40 text-indigo-300 shadow-[0_0_12px_rgba(99,102,241,0.1)]'
-                                            : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
+                                        ? 'bg-indigo-500/15 border-indigo-500/40 text-indigo-300 shadow-[0_0_12px_rgba(99,102,241,0.1)]'
+                                        : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
                                         }`}
                                 >
                                     <Moon size={12} /> {t.report.eveningRoutine}
@@ -511,8 +511,8 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                     {(routineTab === 'morning' ? routine.morning : routine.evening).map((step) => (
                                         <div key={step.order} className="flex gap-3 items-start bg-[#0f172a]/40 p-3 rounded-xl border border-[#2d3a4f]/50 hover:border-[#2d3a4f] transition-colors">
                                             <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-black shrink-0 ${routineTab === 'morning'
-                                                    ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-                                                    : 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30'
+                                                ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                                                : 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30'
                                                 }`}>
                                                 {step.order}
                                             </div>
