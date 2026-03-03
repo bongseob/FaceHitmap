@@ -38,6 +38,7 @@ export default function Dashboard() {
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [faceType, setFaceType] = useState<string | null>(null);
     const [isCameraActive, setIsCameraActive] = useState(false);
+    const [isSimulatingCamera, setIsSimulatingCamera] = useState(false); // 시뮬레이션 상태 추가
     const [showReport, setShowReport] = useState(false);
     const [hasMeasured, setHasMeasured] = useState(false);
 
@@ -119,6 +120,7 @@ export default function Dashboard() {
     const handleCameraStart = async () => {
         try {
             setIsCameraActive(true);
+            setIsSimulatingCamera(false);
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
@@ -133,11 +135,24 @@ export default function Dashboard() {
         }
     };
 
+    const handleSimulateScan = () => {
+        setIsCameraActive(true);
+        setIsSimulatingCamera(true);
+
+        // 시뮬레이션 시 1.5초 후 자동으로 가짜 데이터 주입
+        setTimeout(() => {
+            import('../utils/constants').then(({ DEFAULT_LANDMARKS }) => {
+                setLandmarks(DEFAULT_LANDMARKS as any);
+                setFaceType('Oval / Heart'); // 기본 얼굴형 세팅
+            });
+        }, 1500);
+    };
+
     const startAnalysis = async () => {
         if (!videoRef.current || !analyzerRef.current) return;
 
         const runAnalysis = async () => {
-            if (!isCameraActive || !analyzerRef.current || !videoRef.current || showReport) return;
+            if (!isCameraActive || isSimulatingCamera || !analyzerRef.current || !videoRef.current || showReport) return;
 
             const result = await analyzerRef.current.analyze(videoRef.current);
             if (result) {
@@ -175,6 +190,7 @@ export default function Dashboard() {
         setLandmarks(null);
         setFaceOval(null);
         setFaceType(null);
+        setIsSimulatingCamera(false);
         disconnect();
     };
 
@@ -274,22 +290,40 @@ export default function Dashboard() {
                     {!isCameraActive ? (
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 bg-slate-900/50 backdrop-blur-sm">
                             <Camera size={48} className="mb-4 opacity-20" />
-                            <button
-                                onClick={handleCameraStart}
-                                className="px-6 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-all border border-slate-700"
-                            >
-                                {t.dashboard.startCamera}
-                            </button>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <button
+                                    onClick={handleCameraStart}
+                                    className="px-6 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-all border border-slate-700"
+                                >
+                                    {t.dashboard.startCamera}
+                                </button>
+                                <button
+                                    onClick={handleSimulateScan}
+                                    className="px-6 py-2 bg-indigo-900/50 hover:bg-indigo-800/80 rounded-lg text-sm text-indigo-300 transition-all border border-indigo-700/50 flex items-center gap-2"
+                                >
+                                    <Activity size={16} />
+                                    Simulate Scan (Dev)
+                                </button>
+                            </div>
                         </div>
                     ) : (
                         <>
-                            <video
-                                ref={videoRef}
-                                className="w-full h-full object-cover opacity-60 grayscale-[30%]"
-                                autoPlay
-                                muted
-                                playsInline
-                            />
+                            {isSimulatingCamera ? (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 z-0">
+                                    <div className="w-48 h-64 border-2 border-dashed border-indigo-500/30 rounded-[100px] flex items-center justify-center relative">
+                                        <div className="absolute inset-0 bg-indigo-500/5 rounded-[100px] animate-pulse" />
+                                        <span className="text-xs text-indigo-500/50 uppercase tracking-widest font-mono text-center">Simulated<br />Face Data</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <video
+                                    ref={videoRef}
+                                    className="w-full h-full object-cover opacity-60 grayscale-[30%] z-0 relative"
+                                    autoPlay
+                                    muted
+                                    playsInline
+                                />
+                            )}
                             <HeatmapCanvas
                                 landmarks={landmarks}
                                 hydrationData={hydrationData}
