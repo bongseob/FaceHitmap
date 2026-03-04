@@ -13,33 +13,47 @@ export interface FaceOvalData {
 
 export class FaceAnalyzer {
     private faceMesh: any = null;
+    public isReady: boolean = false;
+    private initPromise: Promise<void> | null = null;
 
     constructor() {
-        // MediaPipe is often better loaded via script or dynamic import in Next.js
         if (typeof window !== 'undefined') {
-            this.init();
+            this.initPromise = this.init();
         }
     }
 
-    private async init() {
-        // Dynamic import to avoid SSR issues
-        const { FaceMesh } = await import('@mediapipe/face_mesh');
-        this.faceMesh = new FaceMesh({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
-        });
+    private async init(): Promise<void> {
+        try {
+            const { FaceMesh } = await import('@mediapipe/face_mesh');
+            this.faceMesh = new FaceMesh({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
+            });
 
-        this.faceMesh.setOptions({
-            maxNumFaces: 1,
-            refineLandmarks: true,
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5,
-        });
+            this.faceMesh.setOptions({
+                maxNumFaces: 1,
+                refineLandmarks: true,
+                minDetectionConfidence: 0.5,
+                minTrackingConfidence: 0.5,
+            });
+
+            await this.faceMesh.initialize();
+            this.isReady = true;
+        } catch (error) {
+            console.error("FaceMesh initialization failed:", error);
+        }
     }
 
     public async analyze(imageElement: HTMLImageElement | HTMLVideoElement): Promise<{ landmarks: any[], segmentedData: SegmentedData, faceOval: FaceOvalData[] } | null> {
-        if (!this.faceMesh) return null;
+        if (this.initPromise) {
+            await this.initPromise;
+        }
 
-        return new Promise((resolve) => {
+        if (!this.faceMesh || !this.isReady) {
+            console.warn("FaceMesh is not ready yet.");
+            return null;
+        }
+
+        return new Promise((resolve, reject) => {
             this.faceMesh.onResults((results: any) => {
                 if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
                     resolve(null);
@@ -52,7 +66,15 @@ export class FaceAnalyzer {
                 resolve({ landmarks, segmentedData, faceOval });
             });
 
-            this.faceMesh.send({ image: imageElement });
+            try {
+                this.faceMesh.send({ image: imageElement }).catch((err: any) => {
+                    console.error("Error inside faceMesh.send:", err);
+                    resolve(null);
+                });
+            } catch (err) {
+                console.error("Sync error calling faceMesh.send:", err);
+                resolve(null);
+            }
         });
     }
 
