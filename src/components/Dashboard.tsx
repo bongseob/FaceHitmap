@@ -326,19 +326,19 @@ export default function Dashboard() {
                 />
             )}
 
-            <header className="mb-8 flex justify-between items-center print:hidden">
+            <header className="mb-4 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 print:hidden">
                 <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                    <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                         {t.dashboard.title}
                     </h1>
-                    <p className="text-slate-400">{t.dashboard.subtitle}</p>
+                    <p className="text-sm sm:text-base text-slate-400">{t.dashboard.subtitle}</p>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
                     {/* Language Selector */}
                     <div className="relative">
                         <button
                             onClick={() => setShowLangMenu(!showLangMenu)}
-                            className="flex items-center gap-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs border border-slate-700 transition-all text-slate-300"
+                            className="flex items-center gap-1.5 px-3 py-2 sm:py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs border border-slate-700 transition-all text-slate-300"
                         >
                             <Globe size={14} className="text-cyan-400" />
                             {SUPPORTED_LOCALES.find(l => l.code === locale)?.flag}
@@ -361,7 +361,7 @@ export default function Dashboard() {
                     {userProfile && (
                         <button
                             onClick={() => setShowSurvey(true)}
-                            className="flex items-center gap-2 px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs border border-slate-700 transition-all text-cyan-400"
+                            className="flex items-center justify-center sm:justify-start gap-2 px-3 py-2 sm:py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs border border-slate-700 transition-all text-cyan-400"
                         >
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -369,18 +369,19 @@ export default function Dashboard() {
                             <span className="hidden sm:inline">{t.common.editProfile}</span>
                         </button>
                     )}
-                    <div className="flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-lg text-xs border border-slate-700">
+                    <div className="flex items-center gap-2 px-3 py-2 sm:py-1 bg-slate-800 rounded-lg text-xs border border-slate-700 whitespace-nowrap">
                         <ShieldCheck size={14} className={isSimulating ? "text-yellow-400" : "text-green-400"} />
-                        <span>{t.common.status}: {isSimulating ? t.common.simulationMode : t.common.realtimeMode}</span>
+                        <span className="hidden sm:inline">{t.common.status}: </span>
+                        <span>{isSimulating ? t.common.simulationMode : t.common.realtimeMode}</span>
                     </div>
                     <button
                         onClick={connect}
                         disabled={isConnecting}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${isConnecting ? 'bg-slate-700' : 'bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-900/20'
+                        className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 rounded-full transition-all text-sm font-medium ${isConnecting ? 'bg-slate-700' : 'bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-900/20'
                             }`}
                     >
-                        <Bluetooth size={18} />
-                        {isConnecting ? t.common.connecting : t.common.connectDevice}
+                        <Bluetooth size={16} />
+                        <span className="whitespace-nowrap">{isConnecting ? t.common.connecting : t.common.connectDevice}</span>
                     </button>
                 </div>
             </header>
