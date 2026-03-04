@@ -633,6 +633,7 @@ export default function Dashboard() {
                                                                         value={manualMoisture}
                                                                         onChange={(e) => setManualMoisture(e.target.value)}
                                                                         placeholder="0~100"
+                                                                        autoFocus
                                                                         className="w-full bg-transparent text-sm text-white text-right py-1.5 focus:outline-none placeholder-slate-600 font-mono"
                                                                     />
                                                                     <span className="text-[10px] text-slate-500 ml-1">%</span>
@@ -644,6 +645,11 @@ export default function Dashboard() {
                                                                         min="0" max="100"
                                                                         value={manualSebum}
                                                                         onChange={(e) => setManualSebum(e.target.value)}
+                                                                        onKeyDown={(e) => {
+                                                                            if (e.key === 'Enter' && manualMoisture && manualSebum) {
+                                                                                handleManualSubmit();
+                                                                            }
+                                                                        }}
                                                                         placeholder="0~100"
                                                                         className="w-full bg-transparent text-sm text-white text-right py-1.5 focus:outline-none placeholder-slate-600 font-mono"
                                                                     />
