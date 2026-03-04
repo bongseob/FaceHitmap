@@ -1,0 +1,16 @@
+{
+    "name": "Face Hitmap",
+    "short_name": "Face Hitmap",
+    "description": "실시간 얼굴 수분 측정 및 스킨케어 분석 솔루션",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0f172a",
+    "theme_color": "#0f172a",
+    "icons": [
+        {
+            "src": "/favicon.ico",
+            "sizes": "16x16 32x32 64x64",
+            "type": "image/x-icon"
+        }
+    ]
+}

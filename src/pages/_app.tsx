@@ -12,7 +12,22 @@ function AppHead() {
         <Head>
             <title>{t.meta.title}</title>
             <meta name="description" content={t.meta.description} />
-            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+
+            {/* SEO & Open Graph Tags */}
+            <meta property="og:title" content={t.meta.title} />
+            <meta property="og:description" content={t.meta.description} />
+            <meta property="og:type" content="website" />
+            <meta property="og:site_name" content="Face Hitmap" />
+
+            {/* Twitter Card Tags */}
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" content={t.meta.title} />
+            <meta name="twitter:description" content={t.meta.description} />
+
+            {/* Additional PWA/Mobile Tags */}
+            <meta name="theme-color" content="#0f172a" />
+            <link rel="manifest" href="/site.webmanifest" />
         </Head>
     );
 }
