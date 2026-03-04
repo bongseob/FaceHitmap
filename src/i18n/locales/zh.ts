@@ -171,6 +171,13 @@ const zh: Translations = {
         disconnected: '设备已断开连接。',
         connectionFailed: '连接失败。（使用模拟模式）',
     },
+    affiliate: {
+        recommendedProducts: '✨ 编辑推荐',
+        buyNowCoupang: 'Coupang特价',
+        buyNowOliveYoung: 'Olive Young特价',
+        buyNowDefault: '查看详情',
+        adNotice: '我们可能会从购买中获得佣金。',
+    },
     meta: {
         title: 'Face Hitmap - 实时面部水分分析',
         description: '面部区域水分测量及热图可视化解决方案',

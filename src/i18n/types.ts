@@ -171,6 +171,13 @@ export interface Translations {
         disconnected: string;
         connectionFailed: string;
     };
+    affiliate: {
+        recommendedProducts: string;
+        buyNowCoupang: string;
+        buyNowOliveYoung: string;
+        buyNowDefault: string;
+        adNotice: string;
+    };
     meta: {
         title: string;
         description: string;

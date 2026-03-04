@@ -171,6 +171,13 @@ const ko: Translations = {
         disconnected: '장비 연결이 해제되었습니다.',
         connectionFailed: '연결에 실패했습니다. (시뮬레이션 모드를 사용합니다)',
     },
+    affiliate: {
+        recommendedProducts: '✨ 에디터 추천템',
+        buyNowCoupang: '쿠팡에서 특가 확인',
+        buyNowOliveYoung: '올리브영 단독 특가',
+        buyNowDefault: '자세히 보기',
+        adNotice: '일정액의 수수료를 제공받을 수 있습니다.',
+    },
     meta: {
         title: 'Face Hitmap - 실시간 얼굴 수분 분석',
         description: '얼굴 부위별 수분 측정 및 히트맵 시각화 솔루션',

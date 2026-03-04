@@ -171,6 +171,13 @@ const en: Translations = {
         disconnected: 'Device has been disconnected.',
         connectionFailed: 'Connection failed. (Using simulation mode)',
     },
+    affiliate: {
+        recommendedProducts: '✨ Editor\'s Pick',
+        buyNowCoupang: 'Get it on Coupang',
+        buyNowOliveYoung: 'Only at Olive Young',
+        buyNowDefault: 'View Details',
+        adNotice: 'We may receive a commission from purchases.',
+    },
     meta: {
         title: 'Face Hitmap - Real-time Facial Hydration Analysis',
         description: 'Facial hydration measurement and heatmap visualization solution',

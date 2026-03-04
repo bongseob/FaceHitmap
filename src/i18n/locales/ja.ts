@@ -171,6 +171,13 @@ const ja: Translations = {
         disconnected: 'デバイスの接続が解除されました。',
         connectionFailed: '接続に失敗しました。（シミュレーションモードを使用します）',
     },
+    affiliate: {
+        recommendedProducts: '✨ エディターのおすすめ',
+        buyNowCoupang: 'Coupangで特価を確認',
+        buyNowOliveYoung: 'Olive Youngの特価',
+        buyNowDefault: '詳細を見る',
+        adNotice: '一定のコミッションを受け取ることがあります。',
+    },
     meta: {
         title: 'Face Hitmap - リアルタイム顔水分分析',
         description: '顔部位別水分測定およびヒートマップ可視化ソリューション',

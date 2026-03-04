@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Download, RefreshCw, CheckCircle2, Sparkles, Beaker, Activity, BrainCircuit, Sun, Moon, Dna } from 'lucide-react';
+import { Download, RefreshCw, CheckCircle2, Sparkles, Beaker, Activity, BrainCircuit, Sun, Moon, Dna, Store, ShoppingCart } from 'lucide-react';
 import { REGION_COLORS, FACE_REGIONS, DEFAULT_LANDMARKS, SensorData } from '../utils/constants';
 import { getAdvancedRecommendations } from '../utils/recommendations';
 import { getAIRecommendation, getSkincareRoutine, getSkinAge, SkincareRoutine, SkinAgeResult } from '../services/GeminiService';
+import { getRecommendedProducts, getDriveDirectLink } from '../utils/affiliates';
 import { UserProfile } from './SurveyModal';
 import { useI18n } from '../i18n/I18nContext';
 
@@ -533,26 +534,69 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                 {/* Steps */}
                                 {routine ? (
                                     <div className="space-y-2.5">
-                                        {(routineTab === 'morning' ? routine.morning : routine.evening).map((step) => (
-                                            <div key={step.order} className="flex gap-3 items-start bg-[#0f172a]/40 p-3 rounded-xl border border-[#2d3a4f]/50 hover:border-[#2d3a4f] transition-colors">
-                                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-black shrink-0 ${routineTab === 'morning'
-                                                    ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-                                                    : 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30'
-                                                    }`}>
-                                                    {step.order}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center justify-between mb-0.5">
-                                                        <span className="text-[12px] font-bold text-white">{step.step}</span>
-                                                        <span className="text-[9px] px-1.5 py-0.5 bg-purple-900/30 text-purple-300 rounded font-medium">{step.ingredient}</span>
+                                        {(routineTab === 'morning' ? routine.morning : routine.evening).map((step) => {
+                                            const recommendedProducts = getRecommendedProducts(step.ingredient);
+
+                                            return (
+                                                <div key={step.order} className="flex flex-col gap-3 bg-[#0f172a]/40 p-3 rounded-xl border border-[#2d3a4f]/50 hover:border-[#2d3a4f] transition-colors">
+                                                    <div className="flex gap-3 items-start">
+                                                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-black shrink-0 ${routineTab === 'morning'
+                                                            ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                                                            : 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30'
+                                                            }`}>
+                                                            {step.order}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center justify-between mb-0.5">
+                                                                <span className="text-[12px] font-bold text-white">{step.step}</span>
+                                                                <span className="text-[9px] px-1.5 py-0.5 bg-purple-900/30 text-purple-300 rounded font-medium">{step.ingredient}</span>
+                                                            </div>
+                                                            <div className="text-[10px] text-[#64748b] mb-1">{step.product}</div>
+                                                            <div className="text-[9px] text-cyan-400/70 flex items-center gap-1">
+                                                                <span className="opacity-60">→</span> {step.tip}
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div className="text-[10px] text-[#64748b] mb-1">{step.product}</div>
-                                                    <div className="text-[9px] text-cyan-400/70 flex items-center gap-1">
-                                                        <span className="opacity-60">→</span> {step.tip}
-                                                    </div>
+
+                                                    {/* Affiliate Links Section */}
+                                                    {recommendedProducts.length > 0 && (
+                                                        <div className="mt-1 pt-3 border-t border-[#2d3a4f]/50 flex flex-col gap-2">
+                                                            <div className="text-[10px] font-bold text-teal-400 mb-1 flex items-center gap-1.5 px-1">
+                                                                <Store size={12} /> {t.affiliate.recommendedProducts}
+                                                            </div>
+                                                            {recommendedProducts.map(product => (
+                                                                <div key={product.id} className="flex gap-3 items-center bg-[#0b121e]/80 p-2.5 rounded-lg border border-[#2d3a4f]/50 hover:border-teal-500/40 transition-all shadow-inner group relative overflow-hidden">
+                                                                    <div className="w-14 h-14 rounded-md bg-[#1e293b] overflow-hidden shrink-0 border border-slate-700/50 flex items-center justify-center relative">
+                                                                        {product.mediaType === 'video' ? (
+                                                                            <video src={getDriveDirectLink(product.mediaUrl)} className="w-full h-full object-cover" autoPlay loop muted playsInline />
+                                                                        ) : (
+                                                                            <img src={getDriveDirectLink(product.mediaUrl)} alt={product.productName} className="w-full h-full object-cover" />
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+                                                                        <span className="text-[9px] text-[#94a3b8] tracking-wider uppercase">{product.brand}</span>
+                                                                        <span className="text-[11px] font-bold text-white truncate leading-snug group-hover:text-teal-300 transition-colors">{product.productName}</span>
+                                                                        <span className="text-[12px] font-black text-white mt-1">{product.price.toLocaleString()}₩</span>
+                                                                    </div>
+                                                                    <a
+                                                                        href={product.buyUrl}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="shrink-0 w-8 h-8 flex items-center justify-center bg-slate-800 hover:bg-teal-600 border border-slate-700 hover:border-teal-500 text-white rounded-lg transition-all shadow-sm"
+                                                                        title={product.buyUrl.includes('coupang') ? t.affiliate.buyNowCoupang : product.buyUrl.includes('oliveyoung') ? t.affiliate.buyNowOliveYoung : t.affiliate.buyNowDefault}
+                                                                    >
+                                                                        <ShoppingCart size={14} className="group-hover:scale-110 transition-transform" />
+                                                                    </a>
+                                                                </div>
+                                                            ))}
+                                                            <div className="text-[8px] text-slate-500/80 text-right mt-1 px-1 italic">
+                                                                * {t.affiliate.adNotice}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2 py-6 justify-center">
