@@ -42,6 +42,10 @@ const ja: Translations = {
         startMeasurement: '測定開始',
         faceDetected: '顔を検出しました',
         photoPreview: '写真確認',
+        uploadPhoto: '写真をアップロード',
+        cameraErrorTitle: 'カメラ制限',
+        cameraErrorDesc: 'カメラの権限がないか、サポートされていません。[写真をアップロード]をご利用ください。',
+        fileUploadError: '画像ファイルの読み込みに失敗しました。',
         regions: {
             forehead: '額',
             leftCheek: '左頬',

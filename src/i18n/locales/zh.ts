@@ -42,6 +42,10 @@ const zh: Translations = {
         startMeasurement: '开始测量',
         faceDetected: '已检测到面部',
         photoPreview: '照片确认',
+        uploadPhoto: '上传照片',
+        cameraErrorTitle: '相机访问受限',
+        cameraErrorDesc: '没有相机权限或不支持相机。请使用[上传照片]。',
+        fileUploadError: '加载图像文件失败。',
         regions: {
             forehead: '额头',
             leftCheek: '左脸颊',

@@ -42,6 +42,10 @@ const en: Translations = {
         startMeasurement: 'Start Measurement',
         faceDetected: 'Face detected',
         photoPreview: 'Photo Preview',
+        uploadPhoto: 'Upload Photo',
+        cameraErrorTitle: 'Camera Access Denied',
+        cameraErrorDesc: 'Camera permission denied or not supported. Please use [Upload Photo].',
+        fileUploadError: 'Failed to load the image file.',
         regions: {
             forehead: 'Forehead',
             leftCheek: 'Left Cheek',

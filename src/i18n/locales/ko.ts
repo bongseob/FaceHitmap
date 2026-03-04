@@ -42,6 +42,10 @@ const ko: Translations = {
         startMeasurement: '측정 시작',
         faceDetected: '얼굴 감지됨',
         photoPreview: '촬영 확인',
+        uploadPhoto: '사진 불러오기',
+        cameraErrorTitle: '카메라 접근 제한',
+        cameraErrorDesc: '카메라 권한이 없거나 지원되지 않습니다. [사진 불러오기]를 이용해주세요.',
+        fileUploadError: '이미지 파일을 불러오지 못했습니다.',
         regions: {
             forehead: '이마',
             leftCheek: '왼쪽 볼',

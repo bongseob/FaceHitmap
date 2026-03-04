@@ -42,6 +42,10 @@ export interface Translations {
         startMeasurement: string;
         faceDetected: string;
         photoPreview: string;
+        uploadPhoto: string;
+        cameraErrorTitle: string;
+        cameraErrorDesc: string;
+        fileUploadError: string;
         regions: {
             forehead: string;
             leftCheek: string;

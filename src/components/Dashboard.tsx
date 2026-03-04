@@ -45,6 +45,7 @@ export default function Dashboard() {
     const [cameraPhase, setCameraPhase] = useState<'shooting' | 'preview' | 'measuring'>('shooting');
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
     const [isFaceInGuide, setIsFaceInGuide] = useState(false);
+    const [cameraError, setCameraError] = useState<string | null>(null);
 
     // 사용자 프로필 및 설문 상태
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -71,6 +72,7 @@ export default function Dashboard() {
     const [manualSebum, setManualSebum] = useState<string>('');
 
     const videoRef = useRef<HTMLVideoElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const analyzerRef = useRef<FaceAnalyzer | null>(null);
 
     const { connect, disconnect, isConnecting, measurementData, setMeasurementData, error: btError, isSimulating } = useBluetoothDevice();
@@ -121,6 +123,48 @@ export default function Dashboard() {
         setMeasurementData({ moisture: moistureValue, sebum: sebumValue });
     };
 
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const imageUrl = URL.createObjectURL(file);
+            setCapturedImage(imageUrl);
+            setIsCameraActive(true);
+            setIsSimulatingCamera(false);
+            setCameraPhase('preview');
+            setCameraError(null);
+
+            const img = new Image();
+            img.onload = async () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) return;
+                ctx.drawImage(img, 0, 0);
+
+                if (analyzerRef.current) {
+                    const result = await analyzerRef.current.analyze(img);
+                    if (result) {
+                        setLandmarks(result.segmentedData);
+                        setFaceOval(result.faceOval);
+                        setFaceType(analyzerRef.current.matchTemplate(result.landmarks));
+                    }
+                }
+            };
+            img.src = imageUrl;
+        } catch (err) {
+            console.error("File upload failed", err);
+            alert(t.dashboard.fileUploadError);
+        }
+
+        // Reset file input so same file can be selected again
+        if (event.target) {
+            event.target.value = '';
+        }
+    };
+
     const handleCameraStart = async () => {
         try {
             setIsCameraActive(true);
@@ -128,6 +172,7 @@ export default function Dashboard() {
             setCameraPhase('shooting');
             setCapturedImage(null);
             setIsFaceInGuide(false);
+            setCameraError(null);
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
             });
@@ -141,6 +186,7 @@ export default function Dashboard() {
         } catch (err) {
             console.error("Camera access failed", err);
             setIsCameraActive(false);
+            setCameraError(t.dashboard.cameraErrorDesc);
         }
     };
 
@@ -245,6 +291,7 @@ export default function Dashboard() {
         setCameraPhase('shooting');
         setCapturedImage(null);
         setIsFaceInGuide(false);
+        setCameraError(null);
         disconnect();
     };
 
@@ -342,14 +389,34 @@ export default function Dashboard() {
                 {/* Left: Viewport */}
                 <div className="lg:col-span-2 relative bg-black rounded-2xl overflow-hidden shadow-2xl border border-slate-800 aspect-video group">
                     {!isCameraActive ? (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 bg-slate-900/50 backdrop-blur-sm">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 bg-slate-900/50 backdrop-blur-sm p-6">
                             <Camera size={48} className="mb-4 opacity-20" />
+                            {cameraError && (
+                                <div className="mb-6 max-w-sm px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-center">
+                                    <h3 className="text-red-400 font-bold text-sm mb-1">{t.dashboard.cameraErrorTitle}</h3>
+                                    <p className="text-red-300/80 text-xs">{cameraError}</p>
+                                </div>
+                            )}
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <button
                                     onClick={handleCameraStart}
                                     className="px-6 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-all border border-slate-700"
                                 >
                                     {t.dashboard.startCamera}
+                                </button>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileUpload}
+                                    accept="image/*"
+                                    className="hidden"
+                                />
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="px-6 py-2 bg-blue-900/40 hover:bg-blue-800/60 rounded-lg text-sm text-blue-300 transition-all border border-blue-700/50 flex items-center gap-2"
+                                >
+                                    <Upload size={16} />
+                                    {t.dashboard.uploadPhoto}
                                 </button>
                                 <button
                                     onClick={handleSimulateScan}
