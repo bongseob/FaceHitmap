@@ -19,11 +19,13 @@ function AppHead() {
             <meta property="og:description" content={t.meta.description} />
             <meta property="og:type" content="website" />
             <meta property="og:site_name" content="Face Hitmap" />
+            <meta property="og:image" content="https://thanks2u.pe.kr/og-image.jpg" />
 
             {/* Twitter Card Tags */}
             <meta name="twitter:card" content="summary_large_image" />
             <meta name="twitter:title" content={t.meta.title} />
             <meta name="twitter:description" content={t.meta.description} />
+            <meta name="twitter:image" content="https://thanks2u.pe.kr/og-image.jpg" />
 
             {/* Additional PWA/Mobile Tags */}
             <meta name="theme-color" content="#0f172a" />
