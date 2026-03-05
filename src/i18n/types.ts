@@ -61,6 +61,10 @@ export interface Translations {
         ageLabel: string;
         raceLabel: string;
         climateLabel: string;
+        genderLabel: string;
+        genderFemale: string;
+        genderMale: string;
+        genderOther: string;
         selectPlaceholder: string;
         age10s: string;
         age20s: string;

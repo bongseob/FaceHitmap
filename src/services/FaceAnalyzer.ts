@@ -26,7 +26,9 @@ export class FaceAnalyzer {
         try {
             const { FaceMesh } = await import('@mediapipe/face_mesh');
             this.faceMesh = new FaceMesh({
-                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
+                locateFile: (file) => {
+                    return `https://unpkg.com/@mediapipe/face_mesh/${file}`;
+                },
             });
 
             this.faceMesh.setOptions({

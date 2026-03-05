@@ -7,6 +7,7 @@ import FaceGuideOverlay from '../components/FaceGuideOverlay';
 import ReportView from '../components/ReportView';
 import { useBluetoothDevice } from '../hooks/useBluetoothDevice';
 import { FaceAnalyzer, SegmentedData, FaceOvalData } from '../services/FaceAnalyzer';
+import { getRecommendedProducts, loadAffiliateProducts } from '../utils/affiliates';
 import { INITIAL_HYDRATION_DATA, FACE_REGIONS } from '../utils/constants';
 import SurveyModal, { UserProfile } from './SurveyModal';
 import { useI18n, SUPPORTED_LOCALES } from '../i18n/I18nContext';
@@ -51,7 +52,7 @@ export default function Dashboard() {
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [showSurvey, setShowSurvey] = useState(true);
 
-    // 컴포넌트 마운트 시 로컬 스토리지에서 프로필 데이터 불러오기
+    // 컴포넌트 마운트 시 로컬 스토리지에서 프로필 데이터 불러오기 및 제휴 상품 CSV 패치
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('faceHitmapUserProfile');
@@ -63,6 +64,12 @@ export default function Dashboard() {
                 } catch (e) {
                     console.error("Failed to parse stored profile", e);
                 }
+            }
+
+            // 백그라운드에서 구글 시트 추천 상품 데이터 프리로딩
+            const csvUrl = process.env.NEXT_PUBLIC_AFFILIATE_CSV_URL;
+            if (csvUrl) {
+                loadAffiliateProducts(csvUrl);
             }
         }
     }, []);

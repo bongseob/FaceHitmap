@@ -40,7 +40,10 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
 
     const advancedRecs = getAdvancedRecommendations(hydrationData, userProfile, locale);
 
+    const [isProductsReady, setIsProductsReady] = useState(false);
+
     useEffect(() => {
+        // ... (AI fetch routines)
         setAiReason(t.report.aiAnalyzing);
         const fetchAI = async () => {
             const reason = await getAIRecommendation(hydrationData, faceType, userProfile, locale);
@@ -48,21 +51,33 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
         };
         fetchAI();
 
-        // Fetch Skin Age
         const fetchSkinAge = async () => {
             const result = await getSkinAge(hydrationData, userProfile, locale);
             setSkinAgeResult(result);
         };
         fetchSkinAge();
 
-        // Fetch Skincare Routine
         const fetchRoutine = async () => {
             const result = await getSkincareRoutine(hydrationData, faceType, userProfile, locale);
             setRoutine(result);
         };
         fetchRoutine();
 
-        // ---- Firebase Data Logging ----
+        // Simple polling to check if products are loaded from Google Sheets
+        const checkProducts = setInterval(() => {
+            // we can just force a re-render to check getRecommendedProducts
+            setIsProductsReady(prev => !prev);
+        }, 1000);
+
+        return () => clearInterval(checkProducts);
+    }, [hydrationData, faceType, userProfile, locale]);
+
+    // ---- Firebase Data Logging (Run ONLY once when component mounts) ----
+    const hasLogged = useRef(false);
+    useEffect(() => {
+        if (hasLogged.current) return;
+        if (!advancedRecs || !advancedRecs.primaryType) return; // Wait until local recs are computed
+
         const logMeasurementData = async () => {
             try {
                 const deviceId = getOrCreateDeviceId();
@@ -83,20 +98,18 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                     }
                 };
 
-                // Fire and forget, don't block the UI
                 addDoc(collection(db, "measurements"), payload)
                     .then((docRef) => console.log("Measurement logged with ID: ", docRef.id))
                     .catch((e) => console.error("Error logging measurement: ", e));
 
+                hasLogged.current = true;
             } catch (error) {
                 console.error("Failed to build/send measurement payload:", error);
             }
         };
 
-        // Call it once when the report view is mounted / data is ready
         logMeasurementData();
-
-    }, [hydrationData, faceType, userProfile, locale, advancedRecs.primaryType, advancedRecs.secondaryConditions, advancedRecs.baseTexture, advancedRecs.activeIngredients]);
+    }, [hydrationData, userProfile, locale, advancedRecs]);
 
     useEffect(() => {
         if (!canvasRef.current) return;
@@ -656,9 +669,9 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                                         <div key={product.id} className="flex gap-3 items-center bg-[#0b121e]/80 p-2.5 rounded-lg border border-[#2d3a4f]/50 hover:border-teal-500/40 transition-all shadow-inner group relative overflow-hidden">
                                                             <div className="w-14 h-14 rounded-md bg-[#1e293b] overflow-hidden shrink-0 border border-slate-700/50 flex items-center justify-center relative">
                                                                 {product.mediaType === 'video' ? (
-                                                                    <video src={getDriveDirectLink(product.mediaUrl)} className="w-full h-full object-cover" autoPlay loop muted playsInline />
+                                                                    <video src={getDriveDirectLink(product.mediaUrl, product.mediaType)} className="w-full h-full object-cover" autoPlay loop muted playsInline />
                                                                 ) : (
-                                                                    <img src={getDriveDirectLink(product.mediaUrl)} alt={product.productName} className="w-full h-full object-cover" />
+                                                                    <img src={getDriveDirectLink(product.mediaUrl, product.mediaType)} alt={product.productName} className="w-full h-full object-cover" />
                                                                 )}
                                                             </div>
                                                             <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">

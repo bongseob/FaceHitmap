@@ -3,6 +3,7 @@ import { User, Globe, AlertCircle } from 'lucide-react';
 import { useI18n } from '../i18n/I18nContext';
 
 export interface UserProfile {
+    gender: 'female' | 'male' | 'other';
     age: string;
     race: string;
     climate: string;
@@ -21,6 +22,7 @@ interface SurveyModalProps {
 
 const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete, initialData }) => {
     const { t } = useI18n();
+    const [gender, setGender] = useState<'female' | 'male' | 'other'>('female');
     const [age, setAge] = useState<string>('');
     const [race, setRace] = useState<string>('');
     const [climate, setClimate] = useState<string>('');
@@ -32,6 +34,7 @@ const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete, initialDa
 
     useEffect(() => {
         if (isOpen && initialData) {
+            setGender(initialData.gender || 'female');
             setAge(initialData.age);
             setRace(initialData.race);
             setClimate(initialData.climate);
@@ -44,6 +47,7 @@ const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete, initialDa
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onComplete({
+            gender,
             age,
             race,
             climate,
@@ -69,6 +73,20 @@ const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete, initialDa
                         <h3 className="text-sm font-semibold text-cyan-300 flex items-center gap-2 mb-3">
                             <Globe size={16} /> {t.survey.exposomeTitle}
                         </h3>
+
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-xs text-slate-400 font-medium">{t.survey.genderLabel}</label>
+                            <select
+                                value={gender}
+                                onChange={(e) => setGender(e.target.value as any)}
+                                className="bg-slate-900 border border-slate-700 text-white rounded-lg p-2.5 text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition"
+                                required
+                            >
+                                <option value="female">{t.survey.genderFemale}</option>
+                                <option value="male">{t.survey.genderMale}</option>
+                                <option value="other">{t.survey.genderOther}</option>
+                            </select>
+                        </div>
 
                         <div className="flex flex-col gap-1.5">
                             <label className="text-xs text-slate-400 font-medium">{t.survey.ageLabel}</label>
