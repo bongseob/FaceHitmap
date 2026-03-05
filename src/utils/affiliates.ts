@@ -81,6 +81,66 @@ export const AFFILIATE_PRODUCTS: AffiliateProduct[] = [
         buyUrl: 'https://www.coupang.com',
         mediaUrl: 'https://images.unsplash.com/photo-1599305090598-fe179d501227?w=800&q=80',
         mediaType: 'image'
+    },
+    {
+        id: 'p-hyaluronic-01',
+        keyword: ['히알루론산', 'hyaluronic', 'hyaluronic acid', '透明质酸', 'ヒアルロン酸'],
+        brand: 'Torriden',
+        productName: 'Dive-In Low Molecular Hyaluronic Acid Serum',
+        price: '22,000',
+        buyUrl: 'https://www.oliveyoung.co.kr',
+        mediaUrl: 'https://images.unsplash.com/photo-1617897903246-719242758050?w=800&q=80',
+        mediaType: 'image'
+    },
+    {
+        id: 'p-niacinamide-01',
+        keyword: ['나이아신아마이드', 'niacinamide', '烟酰胺', 'ナイアシンアミド'],
+        brand: 'The Ordinary',
+        productName: 'Niacinamide 10% + Zinc 1%',
+        price: '11,000',
+        buyUrl: 'https://www.coupang.com',
+        mediaUrl: 'https://images.unsplash.com/photo-1629198688000-71f23e745b6e?w=800&q=80',
+        mediaType: 'image'
+    },
+    {
+        id: 'p-panthenol-01',
+        keyword: ['판테놀', 'panthenol'],
+        brand: 'La Roche-Posay',
+        productName: 'Cicaplast Baume B5+',
+        price: '22,000',
+        buyUrl: 'https://www.oliveyoung.co.kr',
+        mediaUrl: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=800&q=80',
+        mediaType: 'image'
+    },
+    {
+        id: 'p-centella-01',
+        keyword: ['병풀', 'cica', 'centella'],
+        brand: 'Skin1004',
+        productName: 'Madagascar Centella Ampoule',
+        price: '14,900',
+        buyUrl: 'https://www.oliveyoung.co.kr',
+        mediaUrl: 'https://images.unsplash.com/photo-1615397323114-61c0d9aab538?w=800&q=80',
+        mediaType: 'image'
+    },
+    {
+        id: 'p-squalane-01',
+        keyword: ['스쿠알란', 'squalane'],
+        brand: 'The Ordinary',
+        productName: '100% Plant-Derived Squalane',
+        price: '12,500',
+        buyUrl: 'https://www.coupang.com',
+        mediaUrl: 'https://images.unsplash.com/photo-1629198688000-71f23e745b6e?w=800&q=80',
+        mediaType: 'image'
+    },
+    {
+        id: 'p-allantoin-01',
+        keyword: ['알란토인', 'allantoin'],
+        brand: 'Make P:rem',
+        productName: 'Safe me. Relief moisture cream 12',
+        price: '28,000',
+        buyUrl: 'https://www.oliveyoung.co.kr',
+        mediaUrl: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=800&q=80',
+        mediaType: 'image'
     }
 ];
 
