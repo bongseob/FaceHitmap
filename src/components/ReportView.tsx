@@ -167,19 +167,36 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
             const faceCenterX = minX + faceWidth / 2;
             const faceCenterY = minY + faceHeight / 2;
 
-            const transformPoint = (pt: any) => {
+            const transformPoint = (pt: any, region: string) => {
                 if (faceWidth === 0 || faceHeight === 0) return { x: pt.x * width, y: pt.y * height };
                 const nx = (pt.x - faceCenterX) / faceWidth;
                 const ny = (pt.y - faceCenterY) / faceHeight;
-                return {
-                    x: centerX - (nx * radiusX * 1.5), // Scale horizontally
-                    y: centerY + (ny * radiusY * 1.4)  // Scale vertically
-                };
+
+                let px = centerX - (nx * radiusX * 1.5);
+                let py = centerY + (ny * radiusY * 1.4);
+
+                // Force align points exactly to the crosshairs
+                if (
+                    region === FACE_REGIONS.FOREHEAD ||
+                    region === FACE_REGIONS.CHIN ||
+                    region === FACE_REGIONS.NOSE ||
+                    region === FACE_REGIONS.T_ZONE
+                ) {
+                    px = centerX;
+                }
+                if (
+                    region === FACE_REGIONS.LEFT_CHEEK ||
+                    region === FACE_REGIONS.RIGHT_CHEEK
+                ) {
+                    py = centerY;
+                }
+
+                return { x: px, y: py };
             };
 
             // Draw Thermal Heatmap (Smooth continuous gradients)
             Object.entries(drawingLandmarks).forEach(([region, point]: [string, any]) => {
-                const { x, y } = transformPoint(point);
+                const { x, y } = transformPoint(point, region);
                 const value = hydrationData[region]?.[dataField] || (landmarks ? 0 : 50);
 
                 const radius = Math.max(radiusX, radiusY) * 0.75; // Adjusted gradient size
@@ -203,7 +220,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
 
             // Points
             Object.entries(drawingLandmarks).forEach(([region, point]: [string, any]) => {
-                const { x, y } = transformPoint(point);
+                const { x, y } = transformPoint(point, region);
 
                 // Small crosshair
                 ctx.strokeStyle = 'white';
@@ -237,7 +254,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
             ctx.fillRect(scaleX, scaleY, scaleWidth, scaleHeight);
 
             ctx.fillStyle = '#64748b';
-            ctx.font = '8px Monospace';
+            ctx.font = '10px Monospace';
             ctx.textAlign = 'right';
             ctx.fillText('100%', scaleX - 5, scaleY + 5);
             ctx.fillText('0%', scaleX - 5, scaleY + scaleHeight);
@@ -303,7 +320,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
 
                     {/* Left Column */}
                     <div className="md:w-[42%] bg-[#0f172a] p-6 lg:p-8 flex flex-col items-center border-b md:border-b-0 md:border-r border-[#2d3a4f] overflow-visible md:overflow-y-auto overflow-x-hidden custom-scrollbar md:transform-gpu md:will-change-scroll md:overscroll-contain print:!w-full print:!h-auto print:overflow-visible print:!border-none print:p-4">
-                        <div className="w-full flex items-center gap-2 text-[#22d3ee] text-[9px] font-bold uppercase tracking-widest mb-6 border-b border-white/5 pb-4">
+                        <div className="w-full flex items-center gap-2 text-[#22d3ee] text-[11px] font-bold uppercase tracking-widest mb-6 border-b border-white/5 pb-4">
                             <CheckCircle2 size={12} />
                             {t.report.analysisComplete}
                         </div>
@@ -312,7 +329,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                         <div className="w-full flex gap-1.5 mb-3">
                             <button
                                 onClick={() => setHeatmapMode('moisture')}
-                                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold tracking-wide transition-all border ${heatmapMode === 'moisture'
+                                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[13px] font-bold tracking-wide transition-all border ${heatmapMode === 'moisture'
                                     ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.15)]'
                                     : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
                                     }`}
@@ -321,7 +338,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                             </button>
                             <button
                                 onClick={() => setHeatmapMode('sebum')}
-                                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold tracking-wide transition-all border ${heatmapMode === 'sebum'
+                                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[13px] font-bold tracking-wide transition-all border ${heatmapMode === 'sebum'
                                     ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-300 shadow-[0_0_12px_rgba(234,179,8,0.15)]'
                                     : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
                                     }`}
@@ -337,31 +354,31 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                 height={360}
                                 className="w-auto h-auto max-w-full max-h-[360px] object-contain"
                             />
-                            <div className="absolute top-4 right-10 text-[8px] text-white/50 font-mono text-right pointer-events-none">
+                            <div className="absolute top-4 right-10 text-[10px] text-white/50 font-mono text-right pointer-events-none">
                                 THERMAL_ID: SC-029<br />
                                 SCAN_COMPLETED
                             </div>
                             {!landmarks && (
                                 <div className="absolute inset-0 flex items-end justify-center pb-4">
-                                    <span className="text-[8px] text-white/20 uppercase tracking-widest">Template Visualization Mode</span>
+                                    <span className="text-[10px] text-white/20 uppercase tracking-widest">Template Visualization Mode</span>
                                 </div>
                             )}
                         </div>
 
                         <div className="text-center mb-6">
-                            <h3 className="text-[#64748b] text-[9px] font-bold uppercase tracking-[0.2em] mb-1">{t.report.analysisProfile}</h3>
-                            <p className="text-xl font-black text-white print:text-gray-900 tracking-tight leading-none mb-1">{faceType || 'Oval Template'}</p>
-                            <p className="text-sm font-bold text-cyan-400 mb-3">{advancedRecs.primaryType}</p>
+                            <h3 className="text-[#64748b] text-[11px] font-bold uppercase tracking-[0.2em] mb-1">{t.report.analysisProfile}</h3>
+                            <p className="text-2xl font-black text-white print:text-gray-900 tracking-tight leading-none mb-1">{faceType || 'Oval Template'}</p>
+                            <p className="text-base font-bold text-cyan-400 mb-3">{advancedRecs.primaryType}</p>
 
                             {userProfile && (
                                 <div className="flex flex-wrap justify-center gap-1 mt-2 mb-2">
-                                    <span className="px-2 py-0.5 bg-cyan-900/30 border border-cyan-800/50 text-cyan-300 text-[10px] rounded-full">
+                                    <span className="px-2 py-0.5 bg-cyan-900/30 border border-cyan-800/50 text-cyan-300 text-[12px] rounded-full">
                                         {userProfile.age}
                                     </span>
-                                    <span className="px-2 py-0.5 bg-purple-900/30 border border-purple-800/50 text-purple-300 text-[10px] rounded-full">
+                                    <span className="px-2 py-0.5 bg-purple-900/30 border border-purple-800/50 text-purple-300 text-[12px] rounded-full">
                                         {userProfile.race}
                                     </span>
-                                    <span className="px-2 py-0.5 bg-yellow-900/30 border border-yellow-800/50 text-yellow-300 text-[10px] rounded-full">
+                                    <span className="px-2 py-0.5 bg-yellow-900/30 border border-yellow-800/50 text-yellow-300 text-[12px] rounded-full">
                                         {userProfile.climate}
                                     </span>
                                 </div>
@@ -370,7 +387,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                             {advancedRecs.secondaryConditions.length > 0 && (
                                 <div className="flex flex-wrap justify-center gap-1">
                                     {advancedRecs.secondaryConditions.map((cond, idx) => (
-                                        <span key={idx} className="px-2 py-0.5 bg-red-900/30 border border-red-800/50 text-red-300 text-[10px] rounded-full font-medium">
+                                        <span key={idx} className="px-2 py-0.5 bg-red-900/30 border border-red-800/50 text-red-300 text-[12px] rounded-full font-medium">
                                             {cond}
                                         </span>
                                     ))}
@@ -381,17 +398,17 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                         <div className="w-full space-y-4 mb-6">
                             <div className="flex items-center gap-2 mb-1">
                                 <Sparkles size={12} className="text-[#fbbf24]" />
-                                <h4 className="text-[9px] font-bold text-[#94a3b8] uppercase tracking-widest">{t.report.baseTexture} & {t.report.activeIngredients}</h4>
+                                <h4 className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-widest">{t.report.baseTexture} & {t.report.activeIngredients}</h4>
                             </div>
 
                             <div className="space-y-3">
                                 {/* Base Texture */}
                                 <div className="bg-[#1e293b]/40 p-3 rounded-xl border border-[#2d3a4f] border-l-4 border-l-cyan-500">
-                                    <div className="text-[9px] font-bold text-cyan-400 mb-1 uppercase tracking-wider">{t.report.baseTexture}</div>
+                                    <div className="text-[11px] font-bold text-cyan-400 mb-1 uppercase tracking-wider">{t.report.baseTexture}</div>
                                     {advancedRecs.baseTexture.map((ing, idx) => (
                                         <div key={idx} className="flex flex-col mt-1">
-                                            <div className="text-[12px] font-bold text-white print:text-gray-900 leading-none">{ing.name}</div>
-                                            <div className="text-[10px] text-[#64748b] mt-0.5">{ing.description}</div>
+                                            <div className="text-[14px] font-bold text-white print:text-gray-900 leading-none">{ing.name}</div>
+                                            <div className="text-[12px] text-[#64748b] mt-0.5">{ing.description}</div>
                                         </div>
                                     ))}
                                 </div>
@@ -408,18 +425,18 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                                         <Beaker size={14} />
                                                     </div>
                                                     <div className="flex-1">
-                                                        <div className="text-[11px] font-bold text-white print:text-gray-900 mb-0.5 leading-none flex justify-between">
+                                                        <div className="text-[13px] font-bold text-white print:text-gray-900 mb-0.5 leading-none flex justify-between">
                                                             <span>{ing.name}</span>
-                                                            <span className="text-[9px] text-purple-400 bg-purple-900/30 px-1.5 rounded">{ing.benefit}</span>
+                                                            <span className="text-[11px] text-purple-400 bg-purple-900/30 px-1.5 rounded">{ing.benefit}</span>
                                                         </div>
-                                                        <div className="text-[9px] text-[#64748b] leading-tight">{ing.description.substring(0, 40)}...</div>
+                                                        <div className="text-[11px] text-[#64748b] leading-tight">{ing.description.substring(0, 40)}...</div>
                                                     </div>
                                                 </div>
 
                                                 {/* Affiliate Links Section */}
                                                 {recommendedProducts.length > 0 && (
                                                     <div className="mt-1 pt-3 border-t border-[#2d3a4f]/50 flex flex-col gap-2">
-                                                        <div className="text-[10px] font-bold text-teal-400 mb-1 flex items-center gap-1.5 px-1">
+                                                        <div className="text-[12px] font-bold text-teal-400 mb-1 flex items-center gap-1.5 px-1">
                                                             <Store size={12} /> {t.affiliate.recommendedProducts}
                                                         </div>
                                                         {recommendedProducts.map(product => (
@@ -432,9 +449,9 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                                                     )}
                                                                 </div>
                                                                 <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
-                                                                    <span className="text-[9px] text-[#94a3b8] tracking-wider uppercase">{product.brand}</span>
-                                                                    <span className="text-[11px] font-bold text-white truncate leading-snug group-hover:text-teal-300 transition-colors">{product.productName}</span>
-                                                                    <span className="text-[12px] font-black text-white mt-1">{product.price.toLocaleString()}₩</span>
+                                                                    <span className="text-[11px] text-[#94a3b8] tracking-wider uppercase">{product.brand}</span>
+                                                                    <span className="text-[13px] font-bold text-white truncate leading-snug group-hover:text-teal-300 transition-colors">{product.productName}</span>
+                                                                    <span className="text-[14px] font-black text-white mt-1">{product.price.toLocaleString()}₩</span>
                                                                 </div>
                                                                 <a
                                                                     href={product.buyUrl}
@@ -447,7 +464,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                                                 </a>
                                                             </div>
                                                         ))}
-                                                        <div className="text-[8px] text-slate-500/80 text-right mt-1 px-1 italic">
+                                                        <div className="text-[10px] text-slate-500/80 text-right mt-1 px-1 italic">
                                                             * {t.affiliate.adNotice}
                                                         </div>
                                                     </div>
@@ -462,10 +479,10 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                         <div className="w-full mt-auto pt-4 border-t border-white/5">
                             <div className="flex items-center gap-2 mb-3">
                                 <BrainCircuit size={14} className="text-[#a78bfa]" />
-                                <h4 className="text-[9px] font-bold text-[#94a3b8] uppercase tracking-widest">{t.report.aiRecommendation}</h4>
+                                <h4 className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-widest">{t.report.aiRecommendation}</h4>
                             </div>
                             <div className="bg-gradient-to-br from-[#1e1b4b]/50 to-[#1e293b]/30 p-4 rounded-xl border border-[#312e81]/30 shadow-inner">
-                                <p className="text-[11px] text-[#94a3b8] leading-relaxed">
+                                <p className="text-[13px] text-[#94a3b8] leading-relaxed">
                                     {aiReason}
                                 </p>
                             </div>
@@ -487,7 +504,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                         <Activity size={80} />
                                     </div>
                                     <div className="flex flex-col mb-4 relative z-10">
-                                        <span className="text-[#94a3b8] text-[10px] font-bold uppercase tracking-[0.15em] mb-2">{t.report.avgMoisture}</span>
+                                        <span className="text-[#94a3b8] text-[12px] font-bold uppercase tracking-[0.15em] mb-2">{t.report.avgMoisture}</span>
                                         <span className="text-4xl font-black text-[#22d3ee] tracking-tighter leading-none">{averageHydration}%</span>
                                     </div>
                                     <div className="w-full bg-[#0b121e] h-2 rounded-full overflow-hidden border border-white/[0.02]">
@@ -504,7 +521,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                         <Activity size={80} />
                                     </div>
                                     <div className="flex flex-col mb-4 relative z-10">
-                                        <span className="text-[#94a3b8] text-[10px] font-bold uppercase tracking-[0.15em] mb-2 text-right">{t.report.avgSebum}</span>
+                                        <span className="text-[#94a3b8] text-[12px] font-bold uppercase tracking-[0.15em] mb-2 text-right">{t.report.avgSebum}</span>
                                         <span className="text-4xl font-black text-[#fbbf24] tracking-tighter leading-none text-right">{averageSebum}%</span>
                                     </div>
                                     <div className="w-full bg-[#0b121e] h-2 rounded-full overflow-hidden border border-white/[0.02]">
@@ -522,17 +539,17 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                     <div className="p-1.5 bg-purple-500/10 rounded-lg">
                                         <Dna size={16} className="text-purple-400" />
                                     </div>
-                                    <h4 className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-[0.15em]">{t.report.skinAge}</h4>
+                                    <h4 className="text-[12px] font-bold text-[#94a3b8] uppercase tracking-[0.15em]">{t.report.skinAge}</h4>
                                 </div>
                                 {skinAgeResult ? (
                                     <>
                                         <div className="flex items-end justify-between mb-3">
                                             <div className="flex flex-col">
-                                                <span className="text-[9px] text-[#64748b] font-bold uppercase tracking-wider mb-1">{t.report.actualAge}</span>
+                                                <span className="text-[11px] text-[#64748b] font-bold uppercase tracking-wider mb-1">{t.report.actualAge}</span>
                                                 <span className="text-2xl font-black text-white/60">{skinAgeResult.actualAge}</span>
                                             </div>
                                             <div className="flex flex-col items-end">
-                                                <span className="text-[9px] text-[#64748b] font-bold uppercase tracking-wider mb-1">{t.report.estimatedSkinAge}</span>
+                                                <span className="text-[11px] text-[#64748b] font-bold uppercase tracking-wider mb-1">{t.report.estimatedSkinAge}</span>
                                                 <span className={`text-3xl font-black ${skinAgeResult.difference >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                                                     {skinAgeResult.skinAge}
                                                 </span>
@@ -546,21 +563,21 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                             <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg shadow-white/20 border-2 border-purple-400 transition-all duration-1000" style={{ left: `${Math.max(2, Math.min(95, ((skinAgeResult.actualAge - skinAgeResult.skinAge + 15) / 30) * 100))}%` }} />
                                         </div>
                                         {skinAgeResult.difference !== 0 && (
-                                            <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold mb-2 ${skinAgeResult.difference > 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
+                                            <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[12px] font-bold mb-2 ${skinAgeResult.difference > 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
                                                 {skinAgeResult.difference > 0 ? '↓' : '↑'} {Math.abs(skinAgeResult.difference)}
                                             </div>
                                         )}
-                                        <p className="text-[10px] text-[#94a3b8] leading-relaxed">{skinAgeResult.verdict}</p>
+                                        <p className="text-[12px] text-[#94a3b8] leading-relaxed">{skinAgeResult.verdict}</p>
                                     </>
                                 ) : (
                                     <div className="flex items-center gap-2 py-4">
                                         <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
-                                        <span className="text-[11px] text-[#64748b]">{t.report.skinAgeAnalyzing}</span>
+                                        <span className="text-[13px] text-[#64748b]">{t.report.skinAgeAnalyzing}</span>
                                     </div>
                                 )}
                             </div>
 
-                            <p className="text-[11px] text-[#64748b] leading-relaxed w-full bg-[#1e293b]/20 p-4 rounded-xl border border-[#2d3a4f]/50">
+                            <p className="text-[13px] text-[#64748b] leading-relaxed w-full bg-[#1e293b]/20 p-4 rounded-xl border border-[#2d3a4f]/50">
                                 {t.report.skinType}: <span className="text-[#22d3ee] font-bold">{averageHydration}%</span> {t.common.moisture}, <span className="text-[#fbbf24] font-bold">{averageSebum}%</span> {t.common.sebum} — {t.report.complexType}{' '}
                                 {averageSebum > 60 && averageHydration < 40 ? t.report.dehydratedOily : averageSebum > 60 ? t.report.oilySkin : averageHydration < 40 ? t.report.drySkin : t.report.balancedSkin}
                             </p>
@@ -578,16 +595,16 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                     return (
                                         <div key={region.id} className="bg-[#1e293b]/30 p-5 rounded-xl border border-[#2d3a4f] transition-all group flex flex-col justify-between">
                                             <div className="flex justify-between items-center mb-3">
-                                                <span className="text-[9px] text-[#475569] font-black uppercase tracking-widest">{region.label}</span>
+                                                <span className="text-[11px] text-[#475569] font-black uppercase tracking-widest">{region.label}</span>
                                             </div>
                                             <div className="flex justify-between items-end w-full">
                                                 <div className="flex flex-col">
-                                                    <span className="text-[10px] text-[#22d3ee]/60 font-bold mb-1">{t.common.moisture}</span>
+                                                    <span className="text-[12px] text-[#22d3ee]/60 font-bold mb-1">{t.common.moisture}</span>
                                                     <div className="text-lg font-mono font-black text-white print:text-gray-900 leading-none">{data.moisture}%</div>
                                                 </div>
                                                 <div className="h-6 w-px bg-[#2d3a4f]" /> {/* Divider */}
                                                 <div className="flex flex-col items-end">
-                                                    <span className="text-[10px] text-[#fbbf24]/60 font-bold mb-1">{t.common.sebum}</span>
+                                                    <span className="text-[12px] text-[#fbbf24]/60 font-bold mb-1">{t.common.sebum}</span>
                                                     <div className="text-lg font-mono font-black text-white print:text-gray-900 leading-none">{data.sebum}%</div>
                                                 </div>
                                             </div>
@@ -600,14 +617,14 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                             <div className="bg-[#1e293b]/30 p-5 rounded-[1.5rem] border border-[#2d3a4f]">
                                 <div className="flex items-center gap-2 mb-4">
                                     <Sparkles size={14} className="text-amber-400" />
-                                    <h4 className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-[0.15em]">{t.report.skincareRoutine}</h4>
+                                    <h4 className="text-[12px] font-bold text-[#94a3b8] uppercase tracking-[0.15em]">{t.report.skincareRoutine}</h4>
                                 </div>
 
                                 {/* Morning / Evening Tabs */}
                                 <div className="flex gap-1.5 mb-4">
                                     <button
                                         onClick={() => setRoutineTab('morning')}
-                                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold tracking-wide transition-all border ${routineTab === 'morning'
+                                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[13px] font-bold tracking-wide transition-all border ${routineTab === 'morning'
                                             ? 'bg-amber-500/15 border-amber-500/40 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.1)]'
                                             : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
                                             }`}
@@ -616,7 +633,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                     </button>
                                     <button
                                         onClick={() => setRoutineTab('evening')}
-                                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold tracking-wide transition-all border ${routineTab === 'evening'
+                                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[13px] font-bold tracking-wide transition-all border ${routineTab === 'evening'
                                             ? 'bg-indigo-500/15 border-indigo-500/40 text-indigo-300 shadow-[0_0_12px_rgba(99,102,241,0.1)]'
                                             : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
                                             }`}
@@ -630,7 +647,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                     <div className="space-y-2.5">
                                         {(routineTab === 'morning' ? routine.morning : routine.evening).map((step) => (
                                             <div key={step.order} className="flex gap-3 items-start bg-[#0f172a]/40 p-3 rounded-xl border border-[#2d3a4f]/50 hover:border-[#2d3a4f] transition-colors">
-                                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-black shrink-0 ${routineTab === 'morning'
+                                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[13px] font-black shrink-0 ${routineTab === 'morning'
                                                     ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
                                                     : 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30'
                                                     }`}>
@@ -638,11 +655,11 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center justify-between mb-0.5">
-                                                        <span className="text-[12px] font-bold text-white">{step.step}</span>
-                                                        <span className="text-[9px] px-1.5 py-0.5 bg-purple-900/30 text-purple-300 rounded font-medium">{step.ingredient}</span>
+                                                        <span className="text-[14px] font-bold text-white">{step.step}</span>
+                                                        <span className="text-[11px] px-1.5 py-0.5 bg-purple-900/30 text-purple-300 rounded font-medium">{step.ingredient}</span>
                                                     </div>
-                                                    <div className="text-[10px] text-[#64748b] mb-1">{step.product}</div>
-                                                    <div className="text-[9px] text-cyan-400/70 flex items-center gap-1">
+                                                    <div className="text-[12px] text-[#64748b] mb-1">{step.product}</div>
+                                                    <div className="text-[11px] text-cyan-400/70 flex items-center gap-1">
                                                         <span className="opacity-60">→</span> {step.tip}
                                                     </div>
                                                 </div>
@@ -662,7 +679,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
 
                                             return (
                                                 <div className="mt-4 pt-4 border-t border-[#2d3a4f]/50 flex flex-col gap-2">
-                                                    <div className="text-[10px] font-bold text-teal-400 mb-1 flex items-center gap-1.5 px-1">
+                                                    <div className="text-[12px] font-bold text-teal-400 mb-1 flex items-center gap-1.5 px-1">
                                                         <Store size={12} /> {t.affiliate.recommendedProducts}
                                                     </div>
                                                     {uniqueProducts.map(product => (
@@ -675,9 +692,9 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                                                 )}
                                                             </div>
                                                             <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
-                                                                <span className="text-[9px] text-[#94a3b8] tracking-wider uppercase">{product.brand}</span>
-                                                                <span className="text-[11px] font-bold text-white truncate leading-snug group-hover:text-teal-300 transition-colors">{product.productName}</span>
-                                                                <span className="text-[12px] font-black text-white mt-1">{product.price.toLocaleString()}₩</span>
+                                                                <span className="text-[11px] text-[#94a3b8] tracking-wider uppercase">{product.brand}</span>
+                                                                <span className="text-[13px] font-bold text-white truncate leading-snug group-hover:text-teal-300 transition-colors">{product.productName}</span>
+                                                                <span className="text-[14px] font-black text-white mt-1">{product.price.toLocaleString()}₩</span>
                                                             </div>
                                                             <a
                                                                 href={product.buyUrl}
@@ -690,7 +707,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                                             </a>
                                                         </div>
                                                     ))}
-                                                    <div className="text-[8px] text-slate-500/80 text-right mt-1 px-1 italic">
+                                                    <div className="text-[10px] text-slate-500/80 text-right mt-1 px-1 italic">
                                                         * {t.affiliate.adNotice}
                                                     </div>
                                                 </div>
@@ -700,7 +717,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                 ) : (
                                     <div className="flex items-center gap-2 py-6 justify-center">
                                         <div className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-                                        <span className="text-[11px] text-[#64748b]">{t.report.routineAnalyzing}</span>
+                                        <span className="text-[13px] text-[#64748b]">{t.report.routineAnalyzing}</span>
                                     </div>
                                 )}
                             </div>
