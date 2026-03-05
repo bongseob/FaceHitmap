@@ -54,6 +54,12 @@ const ja: Translations = {
             chin: '顎',
             tZone: 'Tゾーン',
         },
+        validationErrors: {
+            too_small: '顔が小さすぎます。カメラに近づいてください。',
+            not_centered: '顔をガイドの中央に合わせてください。',
+            not_frontal: '正面を向いてください。',
+            no_face: '顔を正しく認識できませんでした。',
+        },
     },
     survey: {
         title: 'パーソナライズ肌分析プロフィール設定',

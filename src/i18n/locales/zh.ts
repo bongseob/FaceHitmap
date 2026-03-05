@@ -54,6 +54,12 @@ const zh: Translations = {
             chin: '下巴',
             tZone: 'T区',
         },
+        validationErrors: {
+            too_small: '脸部太小。请靠近镜头。',
+            not_centered: '请将脸部对准辅助线中央。',
+            not_frontal: '请直视镜头。',
+            no_face: '无法清晰识别脸部。',
+        },
     },
     survey: {
         title: '个性化皮肤分析档案设置',

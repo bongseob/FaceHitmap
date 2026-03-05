@@ -54,6 +54,12 @@ const ko: Translations = {
             chin: '턱',
             tZone: 'T존',
         },
+        validationErrors: {
+            too_small: '얼굴이 너무 작습니다. 화면에 꽉 차게 찍어주세요.',
+            not_centered: '얼굴을 가이드 중앙에 맞춰주세요.',
+            not_frontal: '정면을 응시해주세요.',
+            no_face: '얼굴을 제대로 인식할 수 없습니다.',
+        },
     },
     survey: {
         title: '맞춤형 피부 분석 프로필 설정',

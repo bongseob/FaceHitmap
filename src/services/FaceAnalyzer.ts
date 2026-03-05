@@ -11,6 +11,11 @@ export interface FaceOvalData {
     z: number;
 }
 
+export interface FaceValidationResult {
+    isValid: boolean;
+    reason?: 'too_small' | 'not_centered' | 'not_frontal' | 'no_face';
+}
+
 export class FaceAnalyzer {
     private faceMesh: any = null;
     public isReady: boolean = false;
@@ -148,5 +153,53 @@ export class FaceAnalyzer {
         if (faceWidth < 0.15) return false;
 
         return true;
+    }
+
+    /**
+     * Measure face dimensions and position for analytical validation.
+     * Rejects faces that are too small, wildly off-center, or heavily turned.
+     */
+    public validateFacePosition(landmarks: any[]): FaceValidationResult {
+        if (!landmarks || landmarks.length === 0) {
+            return { isValid: false, reason: 'no_face' };
+        }
+
+        const leftEar = landmarks[234];
+        const rightEar = landmarks[454];
+        const topHead = landmarks[10];
+        const chin = landmarks[152];
+        const nose = landmarks[1];
+
+        // 1. 크기(Size) 검증: 좌우 머리 너비가 캔버스 너비의 일정 비율(ex. 25~30% 이상)이어야 함
+        const faceWidth = Math.abs(rightEar.x - leftEar.x);
+        const faceHeight = Math.abs(chin.y - topHead.y);
+
+        // 최소 25% 크기
+        if (faceWidth < 0.25 || faceHeight < 0.35) {
+            return { isValid: false, reason: 'too_small' };
+        }
+
+        // 2. 중앙(Center) 검증: 코의 위치가 화면 중앙(0.5, 0.5) 부근에서 크게 벗어나지 않아야 함
+        const cx = 0.5;
+        const cy = 0.5;
+        const dx = Math.abs(nose.x - cx);
+        const dy = Math.abs(nose.y - cy);
+
+        // 상하좌우 ±25% 편차 허용
+        if (dx > 0.25 || dy > 0.25) {
+            return { isValid: false, reason: 'not_centered' };
+        }
+
+        // 3. 정면(Frontal) 검증: 코가 왼쪽 귀와 오른쪽 귀의 정가운데에 어느 정도 위치하는지 (Yaw 추정)
+        const leftDist = Math.abs(nose.x - leftEar.x);
+        const rightDist = Math.abs(nose.x - rightEar.x);
+        const yawRatio = leftDist / rightDist;
+
+        // 양쪽 귀-코 거리의 비율이 0.5(심한 틀어짐) ~ 2.0 밖이면 측면
+        if (yawRatio < 0.6 || yawRatio > 1.6) {
+            return { isValid: false, reason: 'not_frontal' };
+        }
+
+        return { isValid: true };
     }
 }

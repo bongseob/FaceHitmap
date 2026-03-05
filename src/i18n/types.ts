@@ -54,6 +54,12 @@ export interface Translations {
             chin: string;
             tZone: string;
         };
+        validationErrors: {
+            too_small: string;
+            not_centered: string;
+            not_frontal: string;
+            no_face: string;
+        };
     };
     survey: {
         title: string;

@@ -47,6 +47,7 @@ export default function Dashboard() {
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
     const [isFaceInGuide, setIsFaceInGuide] = useState(false);
     const [cameraError, setCameraError] = useState<string | null>(null);
+    const [faceValidationError, setFaceValidationError] = useState<string | null>(null);
 
     // 사용자 프로필 및 설문 상태
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -154,9 +155,18 @@ export default function Dashboard() {
                 if (analyzerRef.current) {
                     const result = await analyzerRef.current.analyze(img);
                     if (result) {
+                        const validation = analyzerRef.current.validateFacePosition(result.landmarks);
+                        if (!validation.isValid) {
+                            setFaceValidationError(validation.reason || 'no_face');
+                        } else {
+                            setFaceValidationError(null);
+                        }
+
                         setLandmarks(result.segmentedData);
                         setFaceOval(result.faceOval);
                         setFaceType(analyzerRef.current.matchTemplate(result.landmarks));
+                    } else {
+                        setFaceValidationError('no_face');
                     }
                 }
             };
@@ -248,9 +258,18 @@ export default function Dashboard() {
         // Analyze the captured frame
         const result = await analyzerRef.current.analyze(videoRef.current);
         if (result) {
+            const validation = analyzerRef.current.validateFacePosition(result.landmarks);
+            if (!validation.isValid) {
+                setFaceValidationError(validation.reason || 'no_face');
+            } else {
+                setFaceValidationError(null);
+            }
+
             setLandmarks(result.segmentedData);
             setFaceOval(result.faceOval);
             setFaceType(analyzerRef.current.matchTemplate(result.landmarks));
+        } else {
+            setFaceValidationError('no_face');
         }
 
         // Stop camera stream
@@ -267,6 +286,7 @@ export default function Dashboard() {
         setFaceType(null);
         setLandmarks(null);
         setFaceOval(null);
+        setFaceValidationError(null);
         handleCameraStart();
     };
 
@@ -299,6 +319,7 @@ export default function Dashboard() {
         setCapturedImage(null);
         setIsFaceInGuide(false);
         setCameraError(null);
+        setFaceValidationError(null);
         disconnect();
     };
 
@@ -486,6 +507,11 @@ export default function Dashboard() {
                                         </div>
                                     )}
                                     <div className="h-px bg-slate-700 my-3" />
+                                    {faceValidationError && (
+                                        <div className="mb-4 text-xs font-bold text-red-400 bg-red-500/10 border border-red-500/20 p-2 rounded-lg animate-pulse">
+                                            {t.dashboard.validationErrors[faceValidationError as keyof typeof t.dashboard.validationErrors] || '얼굴을 제대로 인식할 수 없습니다.'}
+                                        </div>
+                                    )}
                                     <div className="flex gap-2">
                                         <button
                                             onClick={handleRetake}
@@ -496,7 +522,11 @@ export default function Dashboard() {
                                         </button>
                                         <button
                                             onClick={handleStartMeasurement}
-                                            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-cyan-600 hover:bg-cyan-500 rounded-xl text-sm font-bold shadow-lg shadow-cyan-900/30 transition-all"
+                                            disabled={!!faceValidationError}
+                                            className={`flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-all ${faceValidationError
+                                                    ? 'bg-slate-700 text-slate-500 cursor-not-allowed opacity-50'
+                                                    : 'bg-cyan-600 hover:bg-cyan-500 shadow-cyan-900/30'
+                                                }`}
                                         >
                                             {t.dashboard.startMeasurement}
                                             <ArrowRight size={14} />

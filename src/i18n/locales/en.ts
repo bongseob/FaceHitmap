@@ -54,6 +54,12 @@ const en: Translations = {
             chin: 'Chin',
             tZone: 'T-Zone',
         },
+        validationErrors: {
+            too_small: 'Face is too small. Please move closer to the camera.',
+            not_centered: 'Please align your face to the center of the guide.',
+            not_frontal: 'Please look straight into the camera.',
+            no_face: 'Unable to detect a face clearly.',
+        },
     },
     survey: {
         title: 'Personalized Skin Analysis Profile Setup',
