@@ -8,6 +8,9 @@ import { getAIRecommendation, getSkincareRoutine, getSkinAge, SkincareRoutine, S
 import { getRecommendedProducts, getDriveDirectLink } from '../utils/affiliates';
 import { UserProfile } from './SurveyModal';
 import { useI18n } from '../i18n/I18nContext';
+import { db } from '../lib/firebase';
+import { collection, addDoc } from 'firebase/firestore';
+import { getOrCreateDeviceId } from '../utils/session';
 
 interface ReportViewProps {
     landmarks: any;
@@ -58,7 +61,42 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
             setRoutine(result);
         };
         fetchRoutine();
-    }, [hydrationData, faceType, userProfile, locale]);
+
+        // ---- Firebase Data Logging ----
+        const logMeasurementData = async () => {
+            try {
+                const deviceId = getOrCreateDeviceId();
+                const payload = {
+                    sessionId: deviceId,
+                    timestamp: new Date().getTime(),
+                    profile: userProfile || null,
+                    rawSensorData: hydrationData,
+                    analysisResult: {
+                        primaryType: advancedRecs.primaryType,
+                        secondaryConditions: advancedRecs.secondaryConditions,
+                        baseTexture: advancedRecs.baseTexture.map(t => t.name),
+                        activeIngredients: advancedRecs.activeIngredients.map(i => i.name)
+                    },
+                    metadata: {
+                        appVersion: "0.1.0",
+                        locale: locale
+                    }
+                };
+
+                // Fire and forget, don't block the UI
+                addDoc(collection(db, "measurements"), payload)
+                    .then((docRef) => console.log("Measurement logged with ID: ", docRef.id))
+                    .catch((e) => console.error("Error logging measurement: ", e));
+
+            } catch (error) {
+                console.error("Failed to build/send measurement payload:", error);
+            }
+        };
+
+        // Call it once when the report view is mounted / data is ready
+        logMeasurementData();
+
+    }, [hydrationData, faceType, userProfile, locale, advancedRecs.primaryType, advancedRecs.secondaryConditions, advancedRecs.baseTexture, advancedRecs.activeIngredients]);
 
     useEffect(() => {
         if (!canvasRef.current) return;
