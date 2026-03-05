@@ -631,7 +631,7 @@ export default function Dashboard() {
 
                                                 {/* Manual input form */}
                                                 {
-                                                    isCurrent && (
+                                                    isCurrent && cameraPhase === 'measuring' && (
                                                         <div className="mt-2 bg-slate-900/50 p-3 rounded-xl border border-slate-700 flex flex-col sm:flex-row items-center gap-3 justify-between">
                                                             <div className="flex items-center gap-2 flex-1 w-full">
                                                                 <div className="flex items-center bg-slate-800 rounded-lg px-2 flex-1 border border-slate-700 focus-within:border-cyan-500 focus-within:ring-1 focus-within:ring-cyan-500 transition-all">
