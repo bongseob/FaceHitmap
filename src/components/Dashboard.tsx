@@ -374,7 +374,7 @@ export default function Dashboard() {
                             {SUPPORTED_LOCALES.find(l => l.code === locale)?.flag}
                         </button>
                         {showLangMenu && (
-                            <div className="absolute right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden min-w-[140px]">
+                            <div className="absolute left-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden min-w-[140px]">
                                 {SUPPORTED_LOCALES.map(l => (
                                     <button
                                         key={l.code}
