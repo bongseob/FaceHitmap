@@ -721,6 +721,58 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                     </div>
                                 )}
                             </div>
+
+                            {/* Inner Beauty Section */}
+                            <div className="bg-gradient-to-br from-[#0f172a]/60 to-[#1e293b]/40 p-5 rounded-[1.5rem] border border-[#2d3a4f] shadow-lg">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <Beaker size={14} className="text-emerald-400" />
+                                    <h4 className="text-[12px] font-bold text-[#94a3b8] uppercase tracking-[0.15em]">{t.report.innerBeautyCare}</h4>
+                                </div>
+
+                                {routine?.innerBeauty ? (
+                                    <div className="space-y-4">
+                                        <div className="bg-[#0b121e]/60 p-4 rounded-xl border border-[#2d3a4f]/50">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">{t.report.recommendedNutrient}</span>
+                                                <span className="px-2 py-0.5 bg-emerald-900/30 text-emerald-300 text-[12px] font-black rounded-full border border-emerald-800/50">
+                                                    {routine.innerBeauty.nutrient}
+                                                </span>
+                                            </div>
+
+                                            <div className="mb-4">
+                                                <span className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider block mb-2">{t.report.recommendedFoods}</span>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {routine.innerBeauty.foods.map((food, i) => (
+                                                        <span key={i} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1e293b] text-white text-[13px] font-bold rounded-lg border border-[#2d3a4f]">
+                                                            <span className="text-emerald-400">🥗</span> {food}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-3 pt-3 border-t border-[#2d3a4f]/30">
+                                                <div>
+                                                    <div className="text-[11px] font-bold text-cyan-400 mb-1 flex items-center gap-1.5 uppercase tracking-wide">
+                                                        <Sparkles size={10} /> {t.report.dietaryAdvice}
+                                                    </div>
+                                                    <p className="text-[12px] text-[#94a3b8] leading-relaxed">{routine.innerBeauty.advice}</p>
+                                                </div>
+                                                <div>
+                                                    <div className="text-[11px] font-bold text-rose-400 mb-1 flex items-center gap-1.5 uppercase tracking-wide">
+                                                        <Activity size={10} /> {t.report.dietaryWarning}
+                                                    </div>
+                                                    <p className="text-[11px] text-[#64748b] italic leading-relaxed">{routine.innerBeauty.warning}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2 py-6 justify-center">
+                                        <div className="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+                                        <span className="text-[13px] text-[#64748b]">{t.report.routineAnalyzing}</span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <div className="mt-10 flex flex-col sm:flex-row gap-3 print:hidden">

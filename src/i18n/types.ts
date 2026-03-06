@@ -118,9 +118,15 @@ export interface Translations {
         secondaryConditions: string;
         moistureMap: string;
         sebumMap: string;
+        carePoint: string;
         skincareRoutine: string;
         morningRoutine: string;
         eveningRoutine: string;
+        innerBeautyCare: string;
+        recommendedNutrient: string;
+        recommendedFoods: string;
+        dietaryAdvice: string;
+        dietaryWarning: string;
         skinAge: string;
         actualAge: string;
         estimatedSkinAge: string;
