@@ -358,9 +358,12 @@ export default function Dashboard() {
 
             <header className="mb-4 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 print:hidden">
                 <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                        {t.dashboard.title}
+                    <h1 className="sr-only">
+                        {t.meta.title}
                     </h1>
+                    <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent" aria-hidden="true">
+                        {t.dashboard.title}
+                    </div>
                     <p className="text-sm sm:text-base text-slate-400">{t.dashboard.subtitle}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">

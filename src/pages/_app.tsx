@@ -13,6 +13,7 @@ function AppHead() {
             <title>{t.meta.title}</title>
             <meta name="description" content={t.meta.description} />
             <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+            <link rel="canonical" href="https://thanks2u.pe.kr" />
 
             {/* SEO & Open Graph Tags */}
             <meta property="og:title" content={t.meta.title} />

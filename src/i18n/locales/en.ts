@@ -201,8 +201,8 @@ const en: Translations = {
         adNotice: 'We may receive a commission from purchases.',
     },
     meta: {
-        title: 'Face Hitmap - Real-time Facial Hydration Analysis',
-        description: 'Facial hydration measurement and heatmap visualization solution',
+        title: 'Face Hitmap - AI Real-time Facial Hydration Analysis, Skincare Routine & Inner Beauty Guide',
+        description: 'Measure facial hydration by zone in real-time using AI technology. Get personalized skincare routines and inner beauty dietary advice tailored to your unique skin condition.',
     },
 };
 

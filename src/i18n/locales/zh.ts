@@ -201,8 +201,8 @@ const zh: Translations = {
         adNotice: '我们可能会从购买中获得佣金。',
     },
     meta: {
-        title: 'Face Hitmap - 实时面部水分分析',
-        description: '面部区域水分测量及热图可视化解决方案',
+        title: 'Face Hitmap (脸部热图) - AI实时面部水分测量、护肤方案及内在美营养建议',
+        description: '利用AI实时测量面部各区域水分分布。根据您的实时皮肤状态，为您量身定制科学的护肤方案及内在美饮食建议，助您焕发自然光彩。',
     },
 };
 
