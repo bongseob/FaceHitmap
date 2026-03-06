@@ -88,6 +88,12 @@ const en: Translations = {
         drynessLabel: 'Skin dryness / tightness level',
         sensitivityLabel: 'Skin sensitivity (redness, breakout frequency)',
         pigmentationLabel: 'Pigmentation (dark spots, blemishes) level',
+        primaryConcernLabel: 'Primary Skin Concern to Resolve',
+        concernAcne: 'Acne / Breakouts',
+        concernAging: 'Wrinkles / Loss of Firmness',
+        concernPigmentation: 'Pigmentation / Dark Spots',
+        concernPores: 'Enlarged Pores',
+        concernRedness: 'Redness / Rosacea',
         submitButton: 'Save Profile & Start Analysis',
     },
     report: {

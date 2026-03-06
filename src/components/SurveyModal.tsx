@@ -12,6 +12,7 @@ export interface UserProfile {
         sensitivity: number;
         pigmentation: number;
     };
+    primaryConcern?: 'acne' | 'aging' | 'pigmentation' | 'pores' | 'redness' | '';
 }
 
 interface SurveyModalProps {
@@ -26,6 +27,7 @@ const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete, initialDa
     const [age, setAge] = useState<string>('');
     const [race, setRace] = useState<string>('');
     const [climate, setClimate] = useState<string>('');
+    const [primaryConcern, setPrimaryConcern] = useState<'acne' | 'aging' | 'pigmentation' | 'pores' | 'redness' | ''>('');
 
     // 0-10 Scale for self-assessment like Baumann
     const [dryness, setDryness] = useState<number>(5);
@@ -41,6 +43,7 @@ const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete, initialDa
             setDryness(initialData.skinConcerns?.dryness ?? 5);
             setSensitivity(initialData.skinConcerns?.sensitivity ?? 5);
             setPigmentation(initialData.skinConcerns?.pigmentation ?? 5);
+            setPrimaryConcern(initialData.primaryConcern || '');
         }
     }, [isOpen, initialData]);
 
@@ -51,13 +54,14 @@ const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete, initialDa
             age,
             race,
             climate,
+            primaryConcern,
             skinConcerns: { dryness, sensitivity, pigmentation }
         });
     };
 
     if (!isOpen) return null;
 
-    const isSubmitDisabled = !age || !race || !climate;
+    const isSubmitDisabled = !age || !race || !climate || !primaryConcern;
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex justify-center items-center p-4">
@@ -180,6 +184,28 @@ const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete, initialDa
                                     onChange={(e) => setPigmentation(parseInt(e.target.value))}
                                     className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500"
                                 />
+                            </div>
+                        </div>
+
+                        <div className="mt-4 pt-4 border-t border-slate-700">
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-xs text-slate-300 font-bold flex items-center gap-1.5">
+                                    <AlertCircle size={14} className="text-red-400" />
+                                    {t.survey.primaryConcernLabel}
+                                </label>
+                                <select
+                                    value={primaryConcern}
+                                    onChange={(e) => setPrimaryConcern(e.target.value as any)}
+                                    className="bg-slate-900 border border-slate-700 text-white rounded-lg p-2.5 text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition mt-1"
+                                    required
+                                >
+                                    <option value="" disabled>{t.survey.selectPlaceholder}</option>
+                                    <option value="acne">{t.survey.concernAcne}</option>
+                                    <option value="aging">{t.survey.concernAging}</option>
+                                    <option value="pigmentation">{t.survey.concernPigmentation}</option>
+                                    <option value="pores">{t.survey.concernPores}</option>
+                                    <option value="redness">{t.survey.concernRedness}</option>
+                                </select>
                             </div>
                         </div>
                     </div>

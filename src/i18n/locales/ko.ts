@@ -88,6 +88,12 @@ const ko: Translations = {
         drynessLabel: '평소 피부 건조함/당김 정도',
         sensitivityLabel: '피부 민감도 (붉어짐, 트러블 빈도)',
         pigmentationLabel: '색소침착 (기미, 잡티 등) 체감 정도',
+        primaryConcernLabel: '가장 해결하고 싶은 주된 피부 고민',
+        concernAcne: '트러블 / 여드름',
+        concernAging: '탄력 저하 / 주름',
+        concernPigmentation: '색소침착 / 잡티',
+        concernPores: '넓은 모공',
+        concernRedness: '안면 홍조 / 붉은기',
         submitButton: '프로필 저장 및 분석 준비 완료',
     },
     report: {

@@ -88,6 +88,12 @@ const ja: Translations = {
         drynessLabel: '普段の肌の乾燥・つっぱり感',
         sensitivityLabel: '肌の敏感度（赤み、肌荒れの頻度）',
         pigmentationLabel: '色素沈着（シミ、くすみなど）の度合い',
+        primaryConcernLabel: '最も解決したい主な肌の悩み',
+        concernAcne: 'ニキビ / 肌荒れ',
+        concernAging: 'たるみ / シワ',
+        concernPigmentation: '色素沈着 / シミ',
+        concernPores: '毛穴の開き',
+        concernRedness: '赤ら顔',
         submitButton: 'プロフィール保存＆分析準備完了',
     },
     report: {

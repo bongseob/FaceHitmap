@@ -88,6 +88,12 @@ const zh: Translations = {
         drynessLabel: '日常皮肤干燥/紧绷程度',
         sensitivityLabel: '皮肤敏感度（泛红、痘痘频率）',
         pigmentationLabel: '色素沉着（色斑、暗沉等）程度',
+        primaryConcernLabel: '最想解决的主要肌肤困扰',
+        concernAcne: '痘痘 / 粉刺',
+        concernAging: '缺乏弹性 / 皱纹',
+        concernPigmentation: '色素沉着 / 色斑',
+        concernPores: '毛孔粗大',
+        concernRedness: '泛红 / 红血丝',
         submitButton: '保存档案并准备分析',
     },
     report: {

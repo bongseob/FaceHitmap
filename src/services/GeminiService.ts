@@ -39,6 +39,7 @@ export const getAIRecommendation = async (
             - Ethnicity/Race: ${userProfile.race}
             - Climate: ${userProfile.climate}
             - Self-assessment [Scale 1-10]: Dryness(${userProfile.skinConcerns.dryness}), Sensitivity(${userProfile.skinConcerns.sensitivity}), Pigmentation(${userProfile.skinConcerns.pigmentation})
+            - Primary Goal to Resolve: ${userProfile.primaryConcern || 'None specified'}
             `
             : "No specific demographic data provided.";
 
@@ -56,6 +57,7 @@ export const getAIRecommendation = async (
       - Act as a doctor giving a direct prescription. Use a professional and encouraging medical tone.
       - First, classify the innate skin type (Alipic, Normal, Oily) using sebum data, then state the acquired state (Dryness, Sensitivity, etc) using the climate and self-assessment data.
       - Briefly explain why this diagnosis is made considering their age, race, and climate context.
+      - CRITICAL: Must focus your advice on solving their [Primary Goal to Resolve] if provided.
       - Suggest what kind of base texture (cream, gel, etc) and active ingredients they need based on this combo.
       - Return ONLY the consultation text without any markdown tags.
       - ${dictionaries[locale].gemini.responseLanguage}
@@ -126,7 +128,7 @@ export const getSkincareRoutine = async (
         const avgSebum = values.reduce((a, b) => a + b.sebum, 0) / values.length;
 
         const profileContext = userProfile
-            ? `Age: ${userProfile.age}, Race: ${userProfile.race}, Climate: ${userProfile.climate}, Dryness: ${userProfile.skinConcerns.dryness}/10, Sensitivity: ${userProfile.skinConcerns.sensitivity}/10, Pigmentation: ${userProfile.skinConcerns.pigmentation}/10`
+            ? `Age: ${userProfile.age}, Race: ${userProfile.race}, Climate: ${userProfile.climate}, Dryness: ${userProfile.skinConcerns.dryness}/10, Sensitivity: ${userProfile.skinConcerns.sensitivity}/10, Pigmentation: ${userProfile.skinConcerns.pigmentation}/10, Primary Goal: ${userProfile.primaryConcern || 'None'}`
             : "No profile data.";
 
         const prompt = `
@@ -137,6 +139,8 @@ You are a skincare expert. Based on the following data, generate a personalized 
 - Average Sebum: ${Math.round(avgSebum)}%
 - Face Type: ${faceType || 'Oval'}
 - Profile: ${profileContext}
+
+CRITICAL INSTRUCTION: Tailor the routine specifically to address their "Primary Goal" mentioned in the profile if it exists.
 
 Respond ONLY with valid JSON (no markdown, no code fences) in this exact format:
 {

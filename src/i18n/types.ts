@@ -88,6 +88,12 @@ export interface Translations {
         drynessLabel: string;
         sensitivityLabel: string;
         pigmentationLabel: string;
+        primaryConcernLabel: string;
+        concernAcne: string;
+        concernAging: string;
+        concernPigmentation: string;
+        concernPores: string;
+        concernRedness: string;
         submitButton: string;
     };
     report: {
