@@ -15,6 +15,9 @@ const zh: Translations = {
         connectDevice: '连接设备',
         editProfile: '编辑档案',
         language: '语言',
+        checkHttps: '请检查 HTTPS 安全连接。',
+        checkPermission: '请在浏览器设置中允许摄像头权限。',
+        iosInstruction: '对于 iOS，可能需要检查“设置 > Safari > 摄像头”。',
     },
     dashboard: {
         title: 'Face Hitmap',

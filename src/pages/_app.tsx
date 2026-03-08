@@ -30,7 +30,7 @@ function AppHead() {
 
             {/* Additional PWA/Mobile Tags */}
             <meta name="theme-color" content="#0f172a" />
-            <link rel="manifest" href="/site.webmanifest" />
+            <link rel="manifest" href="/manifest.json" />
         </Head>
     );
 }

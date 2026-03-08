@@ -15,6 +15,9 @@ export interface Translations {
         connectDevice: string;
         editProfile: string;
         language: string;
+        checkHttps: string;
+        checkPermission: string;
+        iosInstruction: string;
     };
     dashboard: {
         title: string;

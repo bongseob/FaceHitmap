@@ -15,6 +15,9 @@ const en: Translations = {
         connectDevice: 'Connect Device',
         editProfile: 'Edit Profile',
         language: 'Language',
+        checkHttps: 'Please check the HTTPS secure connection.',
+        checkPermission: 'Please allow camera permission in browser settings.',
+        iosInstruction: "For iOS, check 'Settings > Safari > Camera' if needed.",
     },
     dashboard: {
         title: 'Face Hitmap',

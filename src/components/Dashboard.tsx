@@ -48,6 +48,7 @@ export default function Dashboard() {
     const [isFaceInGuide, setIsFaceInGuide] = useState(false);
     const [cameraError, setCameraError] = useState<string | null>(null);
     const [faceValidationError, setFaceValidationError] = useState<string | null>(null);
+    const [shouldMirror, setShouldMirror] = useState(true);
 
     // 사용자 프로필 및 설문 상태
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -138,6 +139,7 @@ export default function Dashboard() {
         try {
             const imageUrl = URL.createObjectURL(file);
             setCapturedImage(imageUrl);
+            setShouldMirror(false);
             setIsCameraActive(true);
             setIsSimulatingCamera(false);
             setCameraPhase('preview');
@@ -254,6 +256,7 @@ export default function Dashboard() {
         ctx.drawImage(videoRef.current, 0, 0);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
         setCapturedImage(dataUrl);
+        setShouldMirror(true);
 
         // Analyze the captured frame
         const result = await analyzerRef.current.analyze(videoRef.current);
@@ -339,7 +342,7 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-900 text-white p-8">
+        <div className="min-h-screen bg-slate-900 text-white p-4 sm:p-8">
             <SurveyModal
                 isOpen={showSurvey}
                 onComplete={handleSurveyComplete}
@@ -357,14 +360,14 @@ export default function Dashboard() {
             )}
 
             <header className="mb-4 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 print:hidden">
-                <div>
+                <div className="w-full sm:w-auto text-center sm:text-left">
                     <h1 className="sr-only">
                         {t.meta.title}
                     </h1>
-                    <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent" aria-hidden="true">
+                    <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent" aria-hidden="true">
                         {t.dashboard.title}
                     </div>
-                    <p className="text-sm sm:text-base text-slate-400">{t.dashboard.subtitle}</p>
+                    <p className="text-xs sm:text-base text-slate-400">{t.dashboard.subtitle}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
                     {/* Language Selector */}
@@ -410,7 +413,7 @@ export default function Dashboard() {
                     <button
                         onClick={connect}
                         disabled={isConnecting}
-                        className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 rounded-full transition-all text-sm font-medium ${isConnecting ? 'bg-slate-700' : 'bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-900/20'
+                        className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 rounded-full transition-all active:scale-95 text-sm font-medium ${isConnecting ? 'bg-slate-700' : 'bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-900/20'
                             }`}
                     >
                         <Bluetooth size={16} />
@@ -421,20 +424,25 @@ export default function Dashboard() {
 
             <main className="grid grid-cols-1 lg:grid-cols-3 gap-8 print:hidden">
                 {/* Left: Viewport */}
-                <div className="lg:col-span-2 relative bg-black rounded-2xl overflow-hidden shadow-2xl border border-slate-800 aspect-video group">
+                <div className="lg:col-span-2 relative bg-black rounded-2xl overflow-hidden shadow-2xl border border-slate-800 aspect-[4/3] sm:aspect-video group">
                     {!isCameraActive ? (
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 bg-slate-900/50 backdrop-blur-sm p-6">
                             <Camera size={48} className="mb-4 opacity-20" />
                             {cameraError && (
-                                <div className="mb-6 max-w-sm px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-center">
-                                    <h3 className="text-red-400 font-bold text-sm mb-1">{t.dashboard.cameraErrorTitle}</h3>
-                                    <p className="text-red-300/80 text-xs">{cameraError}</p>
+                                <div className="mb-6 max-w-sm px-4 py-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-center">
+                                    <h3 className="text-red-400 font-bold text-sm mb-2">{t.dashboard.cameraErrorTitle}</h3>
+                                    <p className="text-red-300/80 text-xs leading-relaxed mb-3">{cameraError}</p>
+                                    <div className="text-[10px] text-slate-400 bg-black/40 p-2 rounded-lg text-left space-y-1">
+                                        <p>• {t.common.checkHttps || "HTTPS 보안 연결을 확인해 주세요."}</p>
+                                        <p>• {t.common.checkPermission || "브라우저 설정에서 카메라 권한을 허용해 주세요."}</p>
+                                        <p>• {t.common.iosInstruction || "iOS의 경우 '설정 > Safari > 카메라' 확인이 필요할 수 있습니다."}</p>
+                                    </div>
                                 </div>
                             )}
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <button
                                     onClick={handleCameraStart}
-                                    className="px-6 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-all border border-slate-700"
+                                    className="px-6 py-3 sm:py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 rounded-xl sm:rounded-lg text-sm transition-all border border-slate-700 font-bold sm:font-normal"
                                 >
                                     {t.dashboard.startCamera}
                                 </button>
@@ -447,7 +455,7 @@ export default function Dashboard() {
                                 />
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="px-6 py-2 bg-blue-900/40 hover:bg-blue-800/60 rounded-lg text-sm text-blue-300 transition-all border border-blue-700/50 flex items-center gap-2"
+                                    className="px-6 py-3 sm:py-2 bg-blue-900/40 hover:bg-blue-800/60 active:scale-95 rounded-xl sm:rounded-lg text-sm text-blue-300 transition-all border border-blue-700/50 flex items-center justify-center sm:justify-start gap-2 font-bold sm:font-normal"
                                 >
                                     <Upload size={16} />
                                     {t.dashboard.uploadPhoto}
@@ -500,7 +508,7 @@ export default function Dashboard() {
                                     src={capturedImage}
                                     alt="Captured face"
                                     className="w-full h-full object-cover"
-                                    style={{ transform: 'scaleX(-1)' }}
+                                    style={shouldMirror ? { transform: 'scaleX(-1)' } : undefined}
                                 />
                             )}
                             <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center z-10">
@@ -556,7 +564,7 @@ export default function Dashboard() {
                                     src={capturedImage}
                                     alt="Captured face"
                                     className="w-full h-full object-cover opacity-40 z-0"
-                                    style={{ transform: 'scaleX(-1)' }}
+                                    style={shouldMirror ? { transform: 'scaleX(-1)' } : undefined}
                                 />
                             ) : null}
                             <div className="hidden md:block">

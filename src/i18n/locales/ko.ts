@@ -15,6 +15,9 @@ const ko: Translations = {
         connectDevice: '장비 연결',
         editProfile: '프로필 수정',
         language: '언어',
+        checkHttps: "HTTPS 보안 연결을 확인해 주세요.",
+        checkPermission: "브라우저 설정에서 카메라 권한을 허용해 주세요.",
+        iosInstruction: "iOS의 경우 '설정 > Safari > 카메라' 확인이 필요할 수 있습니다."
     },
     dashboard: {
         title: 'Face Hitmap',

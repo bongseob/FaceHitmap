@@ -15,6 +15,9 @@ const ja: Translations = {
         connectDevice: 'デバイス接続',
         editProfile: 'プロフィール編集',
         language: '言語',
+        checkHttps: "HTTPSセキュア接続を確認してください。",
+        checkPermission: "ブラウザの設定でカメラの権限を許可してください。",
+        iosInstruction: "iOSの場合、『設定 > Safari > カメラ』の確認が必要な場合があります。"
     },
     dashboard: {
         title: 'Face Hitmap',

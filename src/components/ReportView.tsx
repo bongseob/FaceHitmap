@@ -319,7 +319,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                 <div className="max-w-[1000px] w-full bg-[#162031] md:col-span-1 border border-[#2d3a4f] shadow-2xl flex flex-col md:flex-row md:max-h-[95vh] md:rounded-[2rem] md:overflow-hidden scale-in-95 animate-in fade-in duration-300 print:!max-w-full print:!max-h-none print:!w-full print:!rounded-none print:!border-none print:!shadow-none print:flex-col print:overflow-visible print:!h-auto print:scale-100 print:!p-0 print:!m-0">
 
                     {/* Left Column */}
-                    <div className="md:w-[42%] bg-[#0f172a] p-6 lg:p-8 flex flex-col items-center border-b md:border-b-0 md:border-r border-[#2d3a4f] overflow-visible md:overflow-y-auto overflow-x-hidden custom-scrollbar md:transform-gpu md:will-change-scroll md:overscroll-contain print:!w-full print:!h-auto print:overflow-visible print:!border-none print:p-4">
+                    <div className="md:w-[42%] bg-[#0f172a] p-4 sm:p-6 lg:p-8 flex flex-col items-center border-b md:border-b-0 md:border-r border-[#2d3a4f] overflow-visible md:overflow-y-auto overflow-x-hidden custom-scrollbar md:transform-gpu md:will-change-scroll md:overscroll-contain print:!w-full print:!h-auto print:overflow-visible print:!border-none print:p-4">
                         <div className="w-full flex items-center gap-2 text-[#22d3ee] text-[11px] font-bold uppercase tracking-widest mb-6 border-b border-white/5 pb-4">
                             <CheckCircle2 size={12} />
                             {t.report.analysisComplete}
@@ -429,7 +429,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                                             <span>{ing.name}</span>
                                                             <span className="text-[11px] text-purple-400 bg-purple-900/30 px-1.5 rounded">{ing.benefit}</span>
                                                         </div>
-                                                        <div className="text-[11px] text-[#64748b] leading-tight">{ing.description.substring(0, 40)}...</div>
+                                                        <div className="text-[11px] text-[#64748b] leading-tight line-clamp-2">{ing.description}</div>
                                                     </div>
                                                 </div>
 
@@ -490,7 +490,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                     </div>
 
                     {/* Right Column */}
-                    <div className="md:w-[58%] p-6 lg:p-10 flex flex-col overflow-visible md:overflow-y-auto overflow-x-hidden custom-scrollbar md:transform-gpu md:will-change-scroll md:overscroll-contain print:!w-full print:!h-auto print:overflow-visible print:p-4 print:mt-4">
+                    <div className="md:w-[58%] p-4 sm:p-6 lg:p-10 flex flex-col overflow-visible md:overflow-y-auto overflow-x-hidden custom-scrollbar md:transform-gpu md:will-change-scroll md:overscroll-contain print:!w-full print:!h-auto print:overflow-visible print:p-4 print:mt-4">
                         <div className="mb-6 lg:mb-8">
                             <h2 className="text-3xl font-black mb-1.5 tracking-tighter text-white print:text-gray-900">{t.report.reportTitle}</h2>
                             <p className="text-[#64748b] text-sm font-medium">{t.report.reportSubtitle}</p>
@@ -503,9 +503,9 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                     <div className="absolute top-0 right-0 p-4 opacity-[0.03] rotate-12 pointer-events-none">
                                         <Activity size={80} />
                                     </div>
-                                    <div className="flex flex-col mb-4 relative z-10">
-                                        <span className="text-[#94a3b8] text-[12px] font-bold uppercase tracking-[0.15em] mb-2">{t.report.avgMoisture}</span>
-                                        <span className="text-4xl font-black text-[#22d3ee] tracking-tighter leading-none">{averageHydration}%</span>
+                                    <div className="flex flex-col mb-2 sm:mb-4 relative z-10">
+                                        <span className="text-[#94a3b8] text-[10px] sm:text-[12px] font-bold uppercase tracking-[0.15em] mb-1 sm:mb-2">{t.report.avgMoisture}</span>
+                                        <span className="text-2xl sm:text-4xl font-black text-[#22d3ee] tracking-tighter leading-none">{averageHydration}%</span>
                                     </div>
                                     <div className="w-full bg-[#0b121e] h-2 rounded-full overflow-hidden border border-white/[0.02]">
                                         <div
