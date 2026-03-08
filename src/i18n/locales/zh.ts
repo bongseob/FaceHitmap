@@ -18,6 +18,8 @@ const zh: Translations = {
         checkHttps: '请检查 HTTPS 安全连接。',
         checkPermission: '请在浏览器设置中允许摄像头权限。',
         iosInstruction: '对于 iOS，可能需要检查“设置 > Safari > 摄像头”。',
+        inAppBrowserGuide: "您正在通过微信/KakaoTalk（内置浏览器）访问。",
+        inAppBrowserAction: "要安装应用程序，请点击右上角的 [⋮] 或 [⋯] 按钮，然后选择“在浏览器中打开”。"
     },
     dashboard: {
         title: 'Face Hitmap',

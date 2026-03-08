@@ -18,6 +18,8 @@ export interface Translations {
         checkHttps: string;
         checkPermission: string;
         iosInstruction: string;
+        inAppBrowserGuide: string;
+        inAppBrowserAction: string;
     };
     dashboard: {
         title: string;

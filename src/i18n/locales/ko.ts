@@ -17,7 +17,9 @@ const ko: Translations = {
         language: '언어',
         checkHttps: "HTTPS 보안 연결을 확인해 주세요.",
         checkPermission: "브라우저 설정에서 카메라 권한을 허용해 주세요.",
-        iosInstruction: "iOS의 경우 '설정 > Safari > 카메라' 확인이 필요할 수 있습니다."
+        iosInstruction: "iOS의 경우 '설정 > Safari > 카메라' 확인이 필요할 수 있습니다.",
+        inAppBrowserGuide: "카카오톡(인앱 브라우저)에서 접속 중입니다.",
+        inAppBrowserAction: "홈 화면에 앱을 설치하려면 우측 상단 [⋮] 또는 [⋯] 버튼을 눌러 '다른 브라우저로 열기'를 선택해 주세요."
     },
     dashboard: {
         title: 'Face Hitmap',

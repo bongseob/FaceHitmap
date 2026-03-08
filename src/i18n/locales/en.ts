@@ -18,6 +18,8 @@ const en: Translations = {
         checkHttps: 'Please check the HTTPS secure connection.',
         checkPermission: 'Please allow camera permission in browser settings.',
         iosInstruction: "For iOS, check 'Settings > Safari > Camera' if needed.",
+        inAppBrowserGuide: "You are accessing via KakaoTalk (In-App Browser).",
+        inAppBrowserAction: "To install the app, press the [⋮] or [⋯] button at the top right and select 'Open in browser'."
     },
     dashboard: {
         title: 'Face Hitmap',

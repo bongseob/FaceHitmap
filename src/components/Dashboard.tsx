@@ -49,6 +49,7 @@ export default function Dashboard() {
     const [cameraError, setCameraError] = useState<string | null>(null);
     const [faceValidationError, setFaceValidationError] = useState<string | null>(null);
     const [shouldMirror, setShouldMirror] = useState(true);
+    const [isKakaoTalk, setIsKakaoTalk] = useState(false);
 
     // 사용자 프로필 및 설문 상태
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -72,6 +73,12 @@ export default function Dashboard() {
             const csvUrl = process.env.NEXT_PUBLIC_AFFILIATE_CSV_URL;
             if (csvUrl) {
                 loadAffiliateProducts(csvUrl);
+            }
+
+            // 카카오톡 인앱 브라우저 감지
+            const ua = navigator.userAgent.toLowerCase();
+            if (ua.includes('kakaotalk')) {
+                setIsKakaoTalk(true);
             }
         }
     }, []);
@@ -348,6 +355,33 @@ export default function Dashboard() {
                 onComplete={handleSurveyComplete}
                 initialData={userProfile}
             />
+
+            {/* KakaoTalk In-App Browser Guide */}
+            {isKakaoTalk && (
+                <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center">
+                    <div className="w-20 h-20 bg-yellow-400 rounded-3xl flex items-center justify-center mb-6 shadow-2xl shadow-yellow-400/20">
+                        <span className="text-4xl">💬</span>
+                    </div>
+                    <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-200 to-yellow-500 mb-4">
+                        {t.common.inAppBrowserGuide}
+                    </h2>
+                    <p className="text-slate-300 text-sm leading-relaxed mb-8 max-w-xs">
+                        {t.common.inAppBrowserAction}
+                    </p>
+                    <div className="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl flex items-center gap-3 mb-8">
+                        <ArrowRight className="text-yellow-400" size={20} />
+                        <span className="text-xs font-medium text-slate-200">
+                            {locale === 'ko' ? '다른 브라우저로 열기' : 'Open in Browser'}
+                        </span>
+                    </div>
+                    <button
+                        onClick={() => setIsKakaoTalk(false)}
+                        className="text-slate-500 text-xs underline underline-offset-4 hover:text-slate-300 transition-colors"
+                    >
+                        {t.dashboard.retake} (Close)
+                    </button>
+                </div>
+            )}
 
             {showReport && (
                 <ReportView
