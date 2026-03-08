@@ -64,8 +64,8 @@ const SurveyModal: React.FC<SurveyModalProps> = ({ isOpen, onComplete, initialDa
     const isSubmitDisabled = !age || !race || !climate || !primaryConcern;
 
     return (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex justify-center items-center p-4">
-            <div className="bg-[#162031] w-full max-w-lg rounded-2xl border border-slate-700 shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex justify-center items-start sm:items-center p-4 overflow-y-auto">
+            <div className="bg-[#162031] w-full max-w-lg rounded-2xl border border-slate-700 shadow-2xl p-6 sm:p-8 my-auto animate-in fade-in zoom-in duration-300">
                 <div className="flex items-center gap-3 mb-6 border-b border-slate-700 pb-4">
                     <User className="text-cyan-400" size={24} />
                     <h2 className="text-xl font-bold text-white">{t.survey.title}</h2>
