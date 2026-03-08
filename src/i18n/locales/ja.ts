@@ -17,7 +17,9 @@ const ja: Translations = {
         language: '言語',
         checkHttps: "HTTPSセキュア接続を確認してください。",
         checkPermission: "ブラウザの設定でカメラの権限を許可してください。",
-        iosInstruction: "iOSの場合、『設定 > Safari > カメラ』の確認が必要な場合があります。"
+        iosInstruction: "iOSの場合、『設定 > Safari > カメラ』の確認が必要な場合があります。",
+        inAppBrowserGuide: "LINE/カカオトーク(인앱 브라우저)에서 접속 중입니다.",
+        inAppBrowserAction: "홈 화면에 앱을 설치하려면 우측 상단 [⋮] 또는 [⋯] 버튼을 눌러 '다른 브라우저로 열기'를 선택해 주세요."
     },
     dashboard: {
         title: 'Face Hitmap',
