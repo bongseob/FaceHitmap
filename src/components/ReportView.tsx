@@ -316,7 +316,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
     return (
         <div className="fixed inset-0 bg-[#0b121ecf] backdrop-blur-md z-50 overflow-y-auto print:static print:inset-auto print:bg-[#0b121e] print:p-0 print:overflow-visible print:block">
             <div className="flex min-h-full items-start md:items-center justify-center p-0 md:p-4 print:block print:p-0">
-                <div className="max-w-[1000px] w-full bg-[#162031] md:col-span-1 border border-[#2d3a4f] shadow-2xl flex flex-col md:flex-row md:max-h-[95vh] md:rounded-[2rem] md:overflow-hidden scale-in-95 animate-in fade-in duration-300 print:!w-[21cm] print:!max-w-[21cm] print:!min-w-[21cm] print:!max-h-none print:!rounded-none print:!border-none print:!shadow-none print:flex-col print:overflow-visible print:!h-auto print:scale-100 print:!p-0 print:!m-0 mx-auto">
+                <div className="max-w-[1000px] w-full bg-[#162031] md:col-span-1 border border-[#2d3a4f] shadow-2xl flex flex-col md:flex-row md:max-h-[95vh] md:rounded-[2rem] md:overflow-hidden scale-in-95 animate-in fade-in duration-300 print:!w-[19cm] print:!max-w-[19cm] print:!min-w-[19cm] print:!max-h-none print:!rounded-none print:!border-none print:!shadow-none print:flex-col print:overflow-visible print:!h-auto print:scale-100 print:!p-0 print:!mx-auto">
 
                     {/* Left Column */}
                     <div className="md:w-[42%] bg-[#0f172a] p-4 sm:p-6 lg:p-8 flex flex-col items-center border-b md:border-b-0 md:border-r border-[#2d3a4f] overflow-visible md:overflow-y-auto overflow-x-hidden custom-scrollbar md:transform-gpu md:will-change-scroll md:overscroll-contain print:!w-full print:!h-auto print:overflow-visible print:!border-none print:p-4">
@@ -804,16 +804,20 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
                 color-adjust: exact !important;
-                width: 21cm !important;
+                width: auto !important;
                 margin: 0 !important;
                 padding: 0 !important;
             }
             @page {
                 size: A4 portrait;
-                margin: 0;
+                margin: 1cm;
             }
             * {
                 box-sizing: border-box !important;
+            }
+            /* Hide any elements that might overflow horizontally */
+            .print-no-overflow {
+                overflow: hidden !important;
             }
         }
       `}</style>
