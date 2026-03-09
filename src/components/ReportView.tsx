@@ -401,7 +401,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
 
                         <div className="w-full relative bg-[#0a0f18] rounded-[2rem] border border-white/10 mb-8 overflow-hidden shadow-2xl group mx-auto max-w-[400px]">
                             {landmarks ? (
-                                <div className="relative w-full aspect-[4/5] overflow-hidden">
+                                <div className="relative w-full overflow-hidden" style={{ aspectRatio: '4/5', minHeight: '450px' }}>
                                     {/* Diagnostic Grayscale Background - ONLY for Tone Modes */}
                                     {(heatmapMode === 'redness' || heatmapMode === 'evenness') && (
                                         <div
@@ -460,7 +460,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                     })}
                                 </div>
                             ) : (
-                                <div className="w-full aspect-[4/5] flex items-center justify-center bg-slate-900/50">
+                                <div className="w-full flex items-center justify-center bg-slate-900/50" style={{ aspectRatio: '4/5', minHeight: '450px' }}>
                                     <span className="text-[10px] text-white/20 uppercase tracking-widest">Loading Visualization...</span>
                                 </div>
                             )}
