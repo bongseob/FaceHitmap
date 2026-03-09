@@ -143,6 +143,9 @@ export interface Translations {
         skinAgeOlder: string;
         skinAgeSame: string;
         stepTip: string;
+        statusNormal: string;
+        statusCaution: string;
+        statusWarning: string;
     };
     recommendations: {
         richCreamName: string;

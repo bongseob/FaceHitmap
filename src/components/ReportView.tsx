@@ -148,23 +148,22 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
             return `rgba(${Math.round(Math.max(0, r))}, ${Math.round(Math.max(0, g))}, ${Math.round(Math.max(0, b))}, ${alpha})`;
         };
 
-        // Redness Color Map: Light Peach (0) -> Pink (50) -> Deep Red (100)
+        // Redness Color Map: Neon Red Isolation
         const getRednessColor = (value: number, alpha: number = 1) => {
             const v = Math.max(0, Math.min(100, value));
-            let r, g, b;
-            if (v < 50) { r = 255; g = 220 - v; b = 200 - v * 2; }
-            else { r = 255; g = 170 - (v - 50) * 2; b = 100 - (v - 50) * 2; }
-            return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${alpha})`;
+            // Only show strong red for high values, otherwise keep it subtle/transparent
+            const intensity = v > 20 ? (v / 100) : 0;
+            return `rgba(255, ${Math.round(50 - v / 2)}, ${Math.round(50 - v / 2)}, ${intensity * alpha})`;
         };
 
-        // Evenness Color Map (Luminance): Dark (0) -> Skin Tone -> Bright (100)
+        // Evenness Color Map: High Contrast Diagnostic
         const getEvennessColor = (value: number, alpha: number = 1) => {
             const v = Math.max(0, Math.min(100, value));
-            // Simulate skin-like gradient from dark to bright
-            let r = 50 + v * 2;
-            let g = 40 + v * 1.8;
-            let b = 30 + v * 1.5;
-            return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${alpha})`;
+            // Emphasize dark spots (low L*) with purple/blue tones
+            const r = 255 - v * 2;
+            const g = 100 + v;
+            const b = 255;
+            return `rgba(${Math.round(Math.max(0, r))}, ${Math.round(Math.max(0, g))}, ${Math.round(Math.max(0, b))}, ${alpha * 0.6})`;
         };
 
         // Select color function and data field based on mode
@@ -399,12 +398,66 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                         </div>
 
                         <div className="w-full shrink-0 relative bg-black rounded-[1.5rem] border border-[#2d3a4f] mb-6 flex items-center justify-center overflow-hidden shadow-inner group py-4">
-                            <canvas
-                                ref={canvasRef}
-                                width={320}
-                                height={360}
-                                className="w-auto h-auto max-w-full max-h-[360px] object-contain"
-                            />
+                            {landmarks && (
+                                <div className="absolute inset-0 z-0 flex items-center justify-center">
+                                    <div className="relative w-full h-full" style={{ maxWidth: '100%', aspectRatio: '1280/720' }}>
+                                        {/* Diagnostic Grayscale Background for Tone Modes */}
+                                        <div
+                                            className={`absolute inset-0 transition-all duration-700 pointer-events-none ${(heatmapMode === 'redness' || heatmapMode === 'evenness') ? 'grayscale opacity-40 contrast-125' : 'opacity-100'}`}
+                                            style={{
+                                                backgroundImage: `url(${localStorage.getItem('lastCapturedImage') || ''})`,
+                                                backgroundSize: 'cover',
+                                                backgroundPosition: 'center'
+                                            }}
+                                        />
+
+                                        <canvas
+                                            ref={canvasRef}
+                                            className="absolute inset-0 w-full h-full z-10"
+                                            width={1280}
+                                            height={720}
+                                        />
+
+                                        {/* Floating Score Badges for Diagnostic Mode */}
+                                        {(heatmapMode === 'redness' || heatmapMode === 'evenness') && toneData && Object.entries(landmarks).map(([region, point]: [string, any]) => {
+                                            const regionData = toneData.regions[region];
+                                            if (!regionData) return null;
+
+                                            const isWarning = regionData.status === 'warning';
+                                            const isCaution = regionData.status === 'caution';
+                                            const statusText = isWarning ? t.report.statusWarning :
+                                                isCaution ? t.report.statusCaution :
+                                                    t.report.statusNormal;
+
+                                            return (
+                                                <div
+                                                    key={`badge-${region}`}
+                                                    className="absolute z-20 pointer-events-none transition-all duration-1000 animate-in fade-in zoom-in"
+                                                    style={{
+                                                        left: `${point.x * 100}%`,
+                                                        top: `${point.y * 100}%`,
+                                                        transform: 'translate(-50%, -120%)'
+                                                    }}
+                                                >
+                                                    <div className={`px-2 py-1 rounded-lg text-[10px] font-black shadow-lg flex flex-col items-center gap-0 border leading-tight min-w-[60px]
+                                                        ${isWarning ? 'bg-red-600 border-red-400 text-white animate-pulse' :
+                                                            isCaution ? 'bg-yellow-500 border-yellow-300 text-slate-900' :
+                                                                'bg-slate-800/90 border-slate-600 text-slate-300'}`}
+                                                    >
+                                                        <div className="flex items-center gap-1">
+                                                            <span>{isWarning ? '🚨' : isCaution ? '⚠️' : '✅'}</span>
+                                                            <span className="uppercase">{statusText}</span>
+                                                        </div>
+                                                        <div className="text-[9px] opacity-80 font-mono">
+                                                            {heatmapMode === 'redness' ? `R:${Math.round(regionData.redness)}` : `L:${Math.round(regionData.l)}`}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                             <div className="absolute top-4 right-10 text-[10px] text-white/50 font-mono text-right pointer-events-none">
                                 THERMAL_ID: SC-029<br />
                                 SCAN_COMPLETED

@@ -143,6 +143,9 @@ const ja: Translations = {
         skinAgeOlder: '肌が実年齢より{{diff}}歳上です。',
         skinAgeSame: '肌年齢が実年齢と一致しています。',
         stepTip: 'ヒント',
+        statusNormal: '正常',
+        statusCaution: '注意',
+        statusWarning: '警告',
     },
     recommendations: {
         richCreamName: 'リッチクリーム/バーム',

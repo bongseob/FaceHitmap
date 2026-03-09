@@ -142,7 +142,10 @@ const zh: Translations = {
         skinAgeYounger: '您的皮肤比实际年龄年轻{{diff}}岁！',
         skinAgeOlder: '您的皮肤比实际年龄大{{diff}}岁。',
         skinAgeSame: '您的皮肤年龄与实际年龄一致。',
-        stepTip: '建议',
+        stepTip: '小提示',
+        statusNormal: '正常',
+        statusCaution: '注意',
+        statusWarning: '警告',
     },
     recommendations: {
         richCreamName: '滋润面霜/膏霜',

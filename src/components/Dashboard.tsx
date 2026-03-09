@@ -153,6 +153,9 @@ export default function Dashboard() {
             setIsSimulatingCamera(false);
             setCameraPhase('preview');
             setCameraError(null);
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('lastCapturedImage', imageUrl);
+            }
 
             const img = new Image();
             img.onload = async () => {
@@ -270,6 +273,9 @@ export default function Dashboard() {
         const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
         setCapturedImage(dataUrl);
         setShouldMirror(true);
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('lastCapturedImage', dataUrl);
+        }
 
         // Analyze the captured frame
         const result = await analyzerRef.current.analyze(videoRef.current);

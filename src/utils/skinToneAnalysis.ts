@@ -6,11 +6,15 @@ export interface LabColor {
     b: number; // Yellow/Blue (-128 to 127)
 }
 
+export type SkinStatus = 'normal' | 'caution' | 'warning';
+
 export interface ToneData {
     l: number;
     a: number;
     b: number;
     redness: number; // Normalized 0-100 (based on a*)
+    relativeScore: number; // 0-100 (Difference from average)
+    status: SkinStatus;
 }
 
 export interface SkinToneResult {
@@ -100,22 +104,43 @@ export function analyzeSkinTone(
 
         const lab = rgbToLab(avgR, avgG, avgB);
 
-        // Redness calculation: a* usually ranges from -128 to 127.
-        // Skin usually stays in a positive a* range.
-        // We normalize it roughly where 0 is neutral and 40+ is very red.
+        // Redness calculation
         const redness = Math.max(0, Math.min(100, (lab.a / 30) * 100));
 
         regions[region] = {
             ...lab,
-            redness
+            redness,
+            relativeScore: 0, // calculated below
+            status: 'normal'
         };
+    });
+
+    // Post-process for relative scoring and status
+    const regionalData = Object.values(regions);
+    const avgA = regionalData.reduce((acc, curr) => acc + curr.a, 0) / regionalData.length;
+    const avgL = regionalData.reduce((acc, curr) => acc + curr.l, 0) / regionalData.length;
+
+    Object.keys(regions).forEach(region => {
+        const data = regions[region];
+
+        // Relative redness deviation
+        const aDev = Math.max(0, data.a - avgA);
+        const redRelScore = Math.min(100, (aDev / 15) * 100);
+
+        // Determine status based on absolute redness and relative deviation
+        let status: SkinStatus = 'normal';
+        if (data.redness > 60 || redRelScore > 70) status = 'warning';
+        else if (data.redness > 40 || redRelScore > 40) status = 'caution';
+
+        regions[region].relativeScore = Math.round(redRelScore);
+        regions[region].status = status;
     });
 
     const lValues = Object.values(regions).map(r => r.l);
     const aValues = Object.values(regions).map(r => r.a);
 
     // Calculate Evenness (based on L* variance)
-    const avgL = lValues.reduce((a, b) => a + b, 0) / lValues.length;
+    const currentAvgL = lValues.reduce((a, b) => a + b, 0) / lValues.length;
     const varianceL = lValues.reduce((a, b) => a + Math.pow(b - avgL, 2), 0) / lValues.length;
     const stdDevL = Math.sqrt(varianceL);
 

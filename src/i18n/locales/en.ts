@@ -143,6 +143,9 @@ const en: Translations = {
         skinAgeOlder: 'Your skin is {{diff}} years older than your actual age.',
         skinAgeSame: 'Your skin age matches your actual age.',
         stepTip: 'Tip',
+        statusNormal: 'NORMAL',
+        statusCaution: 'CAUTION',
+        statusWarning: 'WARNING',
     },
     recommendations: {
         richCreamName: 'Rich Cream / Balm',

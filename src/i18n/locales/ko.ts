@@ -143,6 +143,9 @@ const ko: Translations = {
         skinAgeOlder: '피부가 실제 나이보다 {{diff}}세 많습니다.',
         skinAgeSame: '피부 나이가 실제 나이와 일치합니다.',
         stepTip: '팁',
+        statusNormal: '안정',
+        statusCaution: '주의',
+        statusWarning: '경고',
     },
     recommendations: {
         richCreamName: '리치 크림/밤 (Rich Cream/Balm)',
