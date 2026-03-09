@@ -6,6 +6,7 @@ import ko from '../i18n/locales/ko';
 import en from '../i18n/locales/en';
 import zh from '../i18n/locales/zh';
 import ja from '../i18n/locales/ja';
+import { SkinToneResult } from "../utils/skinToneAnalysis";
 
 const dictionaries = { ko, en, zh, ja };
 
@@ -22,7 +23,8 @@ export const getAIRecommendation = async (
     hydrationData: Record<string, SensorData>,
     faceType: string | null,
     userProfile?: UserProfile | null,
-    locale: Locale = 'ko'
+    locale: Locale = 'ko',
+    toneData?: SkinToneResult | null
 ): Promise<string> => {
     if (!API_KEY) {
         return simulateAIResponse(hydrationData, faceType, userProfile, locale);
@@ -50,13 +52,17 @@ export const getAIRecommendation = async (
       [Objective Hardware Data]
       Face Type: ${faceType || 'Oval'}
       Hydration/Sebum %: ${JSON.stringify(hydrationData)}
+      [Visual Analysis Data]
+      Redness Score: ${toneData?.averageRedness || 'N/A'} (0-100)
+      Tone Evenness: ${toneData?.averageEvenness || 'N/A'} (0-100)
+      Region Lab Data: ${toneData ? JSON.stringify(toneData.regions) : 'N/A'}
       
       ${profileContext}
 
       Please provide a highly professional, expert "Prescription/Consultation Report" (AI Recommendation Reason) in ${LANGUAGE_NAMES[locale]} (approx. 250-300 characters).
       - Act as a doctor giving a direct prescription. Use a professional and encouraging medical tone.
-      - First, classify the innate skin type (Alipic, Normal, Oily) using sebum data, then state the acquired state (Dryness, Sensitivity, etc) using the climate and self-assessment data.
-      - Briefly explain why this diagnosis is made considering their age, race, and climate context.
+      - First, classify the innate skin type (Alipic, Normal, Oily) using sebum data, then state the acquired state (Dryness, Sensitivity, Redness, etc) using the climate, self-assessment, and visual data (Redness Score/Evenness).
+      - Briefly explain why this diagnosis is made considering their age, race, and climate context, and how it correlates with the visual redness/unevenness seen in the scan.
       - CRITICAL: Must focus your advice on solving their [Primary Goal to Resolve] if provided.
       - Suggest what kind of base texture (cream, gel, etc) and active ingredients they need based on this combo.
       - Return ONLY the consultation text without any markdown tags.
@@ -121,7 +127,8 @@ export const getSkincareRoutine = async (
     hydrationData: Record<string, SensorData>,
     faceType: string | null,
     userProfile?: UserProfile | null,
-    locale: Locale = 'ko'
+    locale: Locale = 'ko',
+    toneData?: SkinToneResult | null
 ): Promise<SkincareRoutine> => {
     if (!API_KEY) {
         return fallbackRoutine(hydrationData, locale);
@@ -146,9 +153,11 @@ You are a skincare expert. Based on the following data, generate a personalized 
 - Average Moisture: ${Math.round(avgMoisture)}%
 - Average Sebum: ${Math.round(avgSebum)}%
 - Face Type: ${faceType || 'Oval'}
+- Skin Redness: ${toneData?.averageRedness || 'N/A'}/100
+- Tone Evenness: ${toneData?.averageEvenness || 'N/A'}/100
 - Profile: ${profileContext}
 
-CRITICAL INSTRUCTION: Tailor the routine specifically to address their "Primary Goal" mentioned in the profile if it exists.
+CRITICAL INSTRUCTION: Tailor the routine specifically to address their "Primary Goal" and the visual issues (Redness if high, Unevenness if low).
 
 Respond ONLY with valid JSON (no markdown, no code fences) in this exact format:
 {
@@ -297,7 +306,8 @@ const AGE_MAP: Record<string, number> = {
 export const getSkinAge = async (
     hydrationData: Record<string, SensorData>,
     userProfile?: UserProfile | null,
-    locale: Locale = 'ko'
+    locale: Locale = 'ko',
+    toneData?: SkinToneResult | null
 ): Promise<SkinAgeResult> => {
     const actualAge = userProfile?.age ? (AGE_MAP[userProfile.age] || 30) : 30;
 
@@ -324,6 +334,7 @@ You are a dermatologist estimating skin age based on measured data.
 - Actual age: ${actualAge}
 - Average Moisture: ${Math.round(avgMoisture)}%
 - Average Sebum: ${Math.round(avgSebum)}%
+- Visual Redness/Evenness: ${toneData?.averageRedness || 'N/A'}/${toneData?.averageEvenness || 'N/A'}
 - ${profileContext}
 
 Estimate the skin age and respond ONLY with valid JSON (no markdown, no code fences):

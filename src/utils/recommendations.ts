@@ -12,6 +12,10 @@ export interface RecommendationResult {
     activeIngredients: Ingredient[];
     primaryType: string;
     secondaryConditions: string[];
+    toneAnalysis?: {
+        evenness: number;
+        redness: number;
+    };
 }
 
 // Locale-aware ingredient library builder
@@ -23,6 +27,7 @@ import ko from '../i18n/locales/ko';
 import en from '../i18n/locales/en';
 import zh from '../i18n/locales/zh';
 import ja from '../i18n/locales/ja';
+import { SkinToneResult } from './skinToneAnalysis';
 
 const dicts = { ko, en, zh, ja };
 
@@ -51,7 +56,8 @@ export const INGREDIENT_LIBRARY = buildIngredientLibrary('ko');
 export const getAdvancedRecommendations = (
     hydrationData: Record<string, SensorData>,
     profile?: UserProfile | null,
-    locale: Locale = 'ko'
+    locale: Locale = 'ko',
+    toneData?: SkinToneResult | null
 ): RecommendationResult => {
     const lib = buildIngredientLibrary(locale);
     const t = dicts[locale].recommendations;
@@ -128,11 +134,20 @@ export const getAdvancedRecommendations = (
         }
     }
 
-    // 2-5. T-Zone combination
-    const tZoneSebum = Math.max(hydrationData['t_zone']?.sebum || 0, hydrationData['nose']?.sebum || 0);
-    if (tZoneSebum > 65 && avgSebum < 50) {
-        secondaryConditions.push('Combination');
-        if (!activeIngredients.some(i => i.name === lib.NIACINAMIDE.name)) {
+    // 2-6. Tone & Redness (Visual Analytics)
+    if (toneData) {
+        if (toneData.averageRedness >= 40) {
+            if (!secondaryConditions.includes('Sensitive')) {
+                secondaryConditions.push('Sensitive');
+            }
+            secondaryConditions.push('Redness');
+            activeIngredients.push(lib.CENTELLA);
+            activeIngredients.push(lib.ALLANTOIN);
+        }
+
+        if (toneData.averageEvenness <= 65) {
+            secondaryConditions.push('Uneven Tone');
+            activeIngredients.push(lib.VITAMIN_C);
             activeIngredients.push(lib.NIACINAMIDE);
         }
     }
@@ -153,6 +168,10 @@ export const getAdvancedRecommendations = (
         baseTexture,
         activeIngredients: uniqueActives,
         primaryType,
-        secondaryConditions
+        secondaryConditions,
+        toneAnalysis: toneData ? {
+            evenness: toneData.averageEvenness,
+            redness: toneData.averageRedness
+        } : undefined
     };
 };

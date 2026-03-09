@@ -123,6 +123,8 @@ const ja: Translations = {
         secondaryConditions: '副次的な状態',
         moistureMap: '水分ヒートマップ',
         sebumMap: '油分ヒートマップ',
+        rednessMap: '赤みヒートマップ',
+        evennessMap: 'トーン均一度',
         carePoint: '主要管理ポイント',
         skincareRoutine: 'カスタムスキンケアルーティン',
         morningRoutine: '朝のルーティン',

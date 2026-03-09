@@ -11,20 +11,22 @@ import { useI18n } from '../i18n/I18nContext';
 import { db } from '../lib/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { getOrCreateDeviceId } from '../utils/session';
+import { SkinToneResult } from '../utils/skinToneAnalysis';
 
 interface ReportViewProps {
     landmarks: any;
     hydrationData: Record<string, SensorData>;
     faceType: string | null;
+    toneData?: SkinToneResult | null;
     userProfile?: UserProfile | null;
     onReset: () => void;
 }
 
-const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceType, userProfile, onReset }) => {
+const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceType, toneData, userProfile, onReset }) => {
     const { t, locale } = useI18n();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [aiReason, setAiReason] = useState<string>("");
-    const [heatmapMode, setHeatmapMode] = useState<'moisture' | 'sebum'>('moisture');
+    const [heatmapMode, setHeatmapMode] = useState<'moisture' | 'sebum' | 'redness' | 'evenness'>('moisture');
     const [skinAgeResult, setSkinAgeResult] = useState<SkinAgeResult | null>(null);
     const [routine, setRoutine] = useState<SkincareRoutine | null>(null);
     const [routineTab, setRoutineTab] = useState<'morning' | 'evening'>('morning');
@@ -38,7 +40,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
         ? Math.round(hydrationValues.reduce((acc, curr) => acc + curr.sebum, 0) / hydrationValues.length)
         : 0;
 
-    const advancedRecs = getAdvancedRecommendations(hydrationData, userProfile, locale);
+    const advancedRecs = getAdvancedRecommendations(hydrationData, userProfile, locale, toneData);
 
     const [isProductsReady, setIsProductsReady] = useState(false);
 
@@ -46,19 +48,19 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
         // ... (AI fetch routines)
         setAiReason(t.report.aiAnalyzing);
         const fetchAI = async () => {
-            const reason = await getAIRecommendation(hydrationData, faceType, userProfile, locale);
+            const reason = await getAIRecommendation(hydrationData, faceType, userProfile, locale, toneData);
             setAiReason(reason);
         };
         fetchAI();
 
         const fetchSkinAge = async () => {
-            const result = await getSkinAge(hydrationData, userProfile, locale);
+            const result = await getSkinAge(hydrationData, userProfile, locale, toneData);
             setSkinAgeResult(result);
         };
         fetchSkinAge();
 
         const fetchRoutine = async () => {
-            const result = await getSkincareRoutine(hydrationData, faceType, userProfile, locale);
+            const result = await getSkincareRoutine(hydrationData, faceType, userProfile, locale, toneData);
             setRoutine(result);
         };
         fetchRoutine();
@@ -146,9 +148,40 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
             return `rgba(${Math.round(Math.max(0, r))}, ${Math.round(Math.max(0, g))}, ${Math.round(Math.max(0, b))}, ${alpha})`;
         };
 
+        // Redness Color Map: Light Peach (0) -> Pink (50) -> Deep Red (100)
+        const getRednessColor = (value: number, alpha: number = 1) => {
+            const v = Math.max(0, Math.min(100, value));
+            let r, g, b;
+            if (v < 50) { r = 255; g = 220 - v; b = 200 - v * 2; }
+            else { r = 255; g = 170 - (v - 50) * 2; b = 100 - (v - 50) * 2; }
+            return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${alpha})`;
+        };
+
+        // Evenness Color Map (Luminance): Dark (0) -> Skin Tone -> Bright (100)
+        const getEvennessColor = (value: number, alpha: number = 1) => {
+            const v = Math.max(0, Math.min(100, value));
+            // Simulate skin-like gradient from dark to bright
+            let r = 50 + v * 2;
+            let g = 40 + v * 1.8;
+            let b = 30 + v * 1.5;
+            return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${alpha})`;
+        };
+
         // Select color function and data field based on mode
-        const getColor = heatmapMode === 'moisture' ? getMoistureColor : getSebumColor;
-        const dataField = heatmapMode === 'moisture' ? 'moisture' : 'sebum';
+        const getColor = heatmapMode === 'moisture' ? getMoistureColor
+            : heatmapMode === 'sebum' ? getSebumColor
+                : heatmapMode === 'redness' ? getRednessColor
+                    : getEvennessColor;
+
+        const getDataValue = (region: string) => {
+            if (heatmapMode === 'moisture') return hydrationData[region]?.moisture || 0;
+            if (heatmapMode === 'sebum') return hydrationData[region]?.sebum || 0;
+            if (toneData && toneData.regions[region]) {
+                if (heatmapMode === 'redness') return toneData.regions[region].redness;
+                if (heatmapMode === 'evenness') return toneData.regions[region].l; // brightness
+            }
+            return 50;
+        };
 
         const drawOverlaysAndHeatmap = () => {
             // Calculate the bounding box of the normalized landmarks
@@ -197,7 +230,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
             // Draw Thermal Heatmap (Smooth continuous gradients)
             Object.entries(drawingLandmarks).forEach(([region, point]: [string, any]) => {
                 const { x, y } = transformPoint(point, region);
-                const value = hydrationData[region]?.[dataField] || (landmarks ? 0 : 50);
+                const value = getDataValue(region);
 
                 const radius = Math.max(radiusX, radiusY) * 0.75; // Adjusted gradient size
                 const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
@@ -344,6 +377,24 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                     }`}
                             >
                                 💛 {t.report.sebumMap}
+                            </button>
+                            <button
+                                onClick={() => setHeatmapMode('redness')}
+                                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[13px] font-bold tracking-wide transition-all border ${heatmapMode === 'redness'
+                                    ? 'bg-red-500/20 border-red-500/50 text-red-300 shadow-[0_0_12px_rgba(239,68,68,0.15)]'
+                                    : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
+                                    }`}
+                            >
+                                🧱 {t.report.rednessMap}
+                            </button>
+                            <button
+                                onClick={() => setHeatmapMode('evenness')}
+                                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[13px] font-bold tracking-wide transition-all border ${heatmapMode === 'evenness'
+                                    ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300 shadow-[0_0_12px_rgba(99,102,241,0.15)]'
+                                    : 'bg-slate-800/30 border-slate-700/50 text-slate-500 hover:text-slate-400 hover:bg-slate-800/50'
+                                    }`}
+                            >
+                                🎨 {t.report.evennessMap}
                             </button>
                         </div>
 

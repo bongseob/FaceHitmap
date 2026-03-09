@@ -123,6 +123,8 @@ const ko: Translations = {
         secondaryConditions: '부가 상태',
         moistureMap: '수분 히트맵',
         sebumMap: '유분 히트맵',
+        rednessMap: '홍조 히트맵',
+        evennessMap: '톤 균일도 히트맵',
         carePoint: '주요 관리 포인트',
         skincareRoutine: 'AI 스킨케어 루틴',
         morningRoutine: '모닝 루틴',

@@ -11,6 +11,7 @@ import { getRecommendedProducts, loadAffiliateProducts } from '../utils/affiliat
 import { INITIAL_HYDRATION_DATA, FACE_REGIONS } from '../utils/constants';
 import SurveyModal, { UserProfile } from './SurveyModal';
 import { useI18n, SUPPORTED_LOCALES } from '../i18n/I18nContext';
+import { analyzeSkinTone, SkinToneResult } from '../utils/skinToneAnalysis';
 
 const MEASUREMENT_SEQUENCE = [
     FACE_REGIONS.FOREHEAD,
@@ -39,6 +40,7 @@ export default function Dashboard() {
     const [hydrationData, setHydrationData] = useState(INITIAL_HYDRATION_DATA);
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [faceType, setFaceType] = useState<string | null>(null);
+    const [toneData, setToneData] = useState<SkinToneResult | null>(null);
     const [isCameraActive, setIsCameraActive] = useState(false);
     const [isSimulatingCamera, setIsSimulatingCamera] = useState(false);
     const [showReport, setShowReport] = useState(false);
@@ -174,6 +176,10 @@ export default function Dashboard() {
                         setLandmarks(result.segmentedData);
                         setFaceOval(result.faceOval);
                         setFaceType(analyzerRef.current.matchTemplate(result.landmarks));
+
+                        // Run Skin Tone Analysis
+                        const toneResult = analyzeSkinTone(canvas, result.segmentedData);
+                        setToneData(toneResult);
                     } else {
                         setFaceValidationError('no_face');
                     }
@@ -278,6 +284,10 @@ export default function Dashboard() {
             setLandmarks(result.segmentedData);
             setFaceOval(result.faceOval);
             setFaceType(analyzerRef.current.matchTemplate(result.landmarks));
+
+            // Run Skin Tone Analysis
+            const toneResult = analyzeSkinTone(canvas, result.segmentedData);
+            setToneData(toneResult);
         } else {
             setFaceValidationError('no_face');
         }
@@ -326,6 +336,7 @@ export default function Dashboard() {
         setLandmarks(null);
         setFaceOval(null);
         setFaceType(null);
+        setToneData(null);
         setIsSimulatingCamera(false);
         setCameraPhase('shooting');
         setCapturedImage(null);
@@ -388,6 +399,7 @@ export default function Dashboard() {
                     landmarks={landmarks}
                     hydrationData={hydrationData}
                     faceType={faceType}
+                    toneData={toneData}
                     userProfile={userProfile}
                     onReset={handleReset}
                 />

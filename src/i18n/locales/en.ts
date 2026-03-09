@@ -123,6 +123,8 @@ const en: Translations = {
         secondaryConditions: 'Secondary Conditions',
         moistureMap: 'Moisture Map',
         sebumMap: 'Sebum Map',
+        rednessMap: 'Redness Map',
+        evennessMap: 'Tone Evenness Map',
         carePoint: 'Key Management Points',
         skincareRoutine: 'Skincare Routine',
         morningRoutine: 'Morning Routine',

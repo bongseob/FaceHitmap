@@ -123,6 +123,8 @@ export interface Translations {
         secondaryConditions: string;
         moistureMap: string;
         sebumMap: string;
+        rednessMap: string;
+        evennessMap: string;
         carePoint: string;
         skincareRoutine: string;
         morningRoutine: string;
