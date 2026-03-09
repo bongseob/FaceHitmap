@@ -397,65 +397,67 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                             </button>
                         </div>
 
-                        <div className="w-full shrink-0 relative bg-black rounded-[1.5rem] border border-[#2d3a4f] mb-6 flex items-center justify-center overflow-hidden shadow-inner group py-4">
-                            {landmarks && (
-                                <div className="absolute inset-0 z-0 flex items-center justify-center">
-                                    <div className="relative w-full h-full" style={{ maxWidth: '100%', aspectRatio: '1280/720' }}>
-                                        {/* Diagnostic Grayscale Background for Tone Modes */}
-                                        <div
-                                            className={`absolute inset-0 transition-all duration-700 pointer-events-none ${(heatmapMode === 'redness' || heatmapMode === 'evenness') ? 'grayscale opacity-40 contrast-125' : 'opacity-100'}`}
-                                            style={{
-                                                backgroundImage: `url(${localStorage.getItem('lastCapturedImage') || ''})`,
-                                                backgroundSize: 'cover',
-                                                backgroundPosition: 'center'
-                                            }}
-                                        />
+                        <div className="w-full relative bg-[#0a0f18] rounded-[2rem] border border-white/10 mb-8 overflow-hidden shadow-2xl group mx-auto max-w-[400px]">
+                            {landmarks ? (
+                                <div className="relative w-full aspect-[4/5] overflow-hidden">
+                                    {/* Diagnostic Grayscale Background for Tone Modes */}
+                                    <div
+                                        className={`absolute inset-0 transition-all duration-700 pointer-events-none ${(heatmapMode === 'redness' || heatmapMode === 'evenness') ? 'grayscale opacity-30 contrast-125' : 'opacity-100'}`}
+                                        style={{
+                                            backgroundImage: `url(${localStorage.getItem('lastCapturedImage') || ''})`,
+                                            backgroundSize: 'cover',
+                                            backgroundPosition: 'center'
+                                        }}
+                                    />
 
-                                        <canvas
-                                            ref={canvasRef}
-                                            className="absolute inset-0 w-full h-full z-10"
-                                            width={1280}
-                                            height={720}
-                                        />
+                                    <canvas
+                                        ref={canvasRef}
+                                        className="absolute inset-0 w-full h-full z-10"
+                                        width={1280}
+                                        height={1600} // Portrait-friendly resolution
+                                    />
 
-                                        {/* Floating Score Badges for Diagnostic Mode */}
-                                        {(heatmapMode === 'redness' || heatmapMode === 'evenness') && toneData && Object.entries(landmarks).map(([region, point]: [string, any]) => {
-                                            const regionData = toneData.regions[region];
-                                            if (!regionData) return null;
+                                    {/* Floating Score Badges for Diagnostic Mode */}
+                                    {(heatmapMode === 'redness' || heatmapMode === 'evenness') && toneData && Object.entries(landmarks).map(([region, point]: [string, any]) => {
+                                        const regionData = toneData.regions[region];
+                                        if (!regionData) return null;
 
-                                            const isWarning = regionData.status === 'warning';
-                                            const isCaution = regionData.status === 'caution';
-                                            const statusText = isWarning ? t.report.statusWarning :
-                                                isCaution ? t.report.statusCaution :
-                                                    t.report.statusNormal;
+                                        const isWarning = regionData.status === 'warning';
+                                        const isCaution = regionData.status === 'caution';
+                                        const statusText = isWarning ? t.report.statusWarning :
+                                            isCaution ? t.report.statusCaution :
+                                                t.report.statusNormal;
 
-                                            return (
-                                                <div
-                                                    key={`badge-${region}`}
-                                                    className="absolute z-20 pointer-events-none transition-all duration-1000 animate-in fade-in zoom-in"
-                                                    style={{
-                                                        left: `${point.x * 100}%`,
-                                                        top: `${point.y * 100}%`,
-                                                        transform: 'translate(-50%, -120%)'
-                                                    }}
-                                                >
-                                                    <div className={`px-2 py-1 rounded-lg text-[10px] font-black shadow-lg flex flex-col items-center gap-0 border leading-tight min-w-[60px]
+                                        return (
+                                            <div
+                                                key={`badge-${region}`}
+                                                className="absolute z-20 pointer-events-none transition-all duration-1000 animate-in fade-in zoom-in"
+                                                style={{
+                                                    left: `${point.x * 100}%`,
+                                                    top: `${point.y * 100}%`,
+                                                    transform: 'translate(-50%, -120%)'
+                                                }}
+                                            >
+                                                <div className={`px-2 py-1 rounded-lg text-[10px] font-black shadow-lg flex flex-col items-center gap-0 border leading-tight min-w-[60px]
                                                         ${isWarning ? 'bg-red-600 border-red-400 text-white animate-pulse' :
-                                                            isCaution ? 'bg-yellow-500 border-yellow-300 text-slate-900' :
-                                                                'bg-slate-800/90 border-slate-600 text-slate-300'}`}
-                                                    >
-                                                        <div className="flex items-center gap-1">
-                                                            <span>{isWarning ? '🚨' : isCaution ? '⚠️' : '✅'}</span>
-                                                            <span className="uppercase">{statusText}</span>
-                                                        </div>
-                                                        <div className="text-[9px] opacity-80 font-mono">
-                                                            {heatmapMode === 'redness' ? `R:${Math.round(regionData.redness)}` : `L:${Math.round(regionData.l)}`}
-                                                        </div>
+                                                        isCaution ? 'bg-yellow-500 border-yellow-300 text-slate-900' :
+                                                            'bg-slate-800/90 border-slate-600 text-slate-300'}`}
+                                                >
+                                                    <div className="flex items-center gap-1">
+                                                        <span>{isWarning ? '🚨' : isCaution ? '⚠️' : '✅'}</span>
+                                                        <span className="uppercase">{statusText}</span>
+                                                    </div>
+                                                    <div className="text-[9px] opacity-80 font-mono">
+                                                        {heatmapMode === 'redness' ? `R:${Math.round(regionData.redness)}` : `L:${Math.round(regionData.l)}`}
                                                     </div>
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="w-full aspect-[4/5] flex items-center justify-center bg-slate-900/50">
+                                    <span className="text-[10px] text-white/20 uppercase tracking-widest">Loading Visualization...</span>
                                 </div>
                             )}
                             <div className="absolute top-4 right-10 text-[10px] text-white/50 font-mono text-right pointer-events-none">
