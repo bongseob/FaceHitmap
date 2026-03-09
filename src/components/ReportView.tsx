@@ -255,17 +255,17 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                 const { x, y } = transformPoint(point, region);
 
                 // Small crosshair
-                ctx.strokeStyle = 'white';
-                ctx.lineWidth = 0.5;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.lineWidth = 0.8;
                 ctx.beginPath();
-                ctx.moveTo(x - 5, y); ctx.lineTo(x + 5, y);
-                ctx.moveTo(x, y - 5); ctx.lineTo(x, y + 5);
+                ctx.moveTo(x - 6, y); ctx.lineTo(x + 6, y);
+                ctx.moveTo(x, y - 6); ctx.lineTo(x, y + 6);
                 ctx.stroke();
 
                 // Simple circle
                 ctx.beginPath();
-                ctx.arc(x, y, 2, 0, 2 * Math.PI);
-                ctx.fillStyle = 'cyan';
+                ctx.arc(x, y, 1.5, 0, 2 * Math.PI);
+                ctx.fillStyle = '#22d3ee';
                 ctx.fill();
             });
 
@@ -285,11 +285,11 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
             ctx.fillStyle = scaleGradient;
             ctx.fillRect(scaleX, scaleY, scaleWidth, scaleHeight);
 
-            ctx.fillStyle = '#64748b';
-            ctx.font = '10px Monospace';
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = 'bold 13px Monospace';
             ctx.textAlign = 'right';
-            ctx.fillText('100%', scaleX - 5, scaleY + 5);
-            ctx.fillText('0%', scaleX - 5, scaleY + scaleHeight);
+            ctx.fillText('100%', scaleX - 12, scaleY + 5);
+            ctx.fillText('0%', scaleX - 12, scaleY + scaleHeight);
         };
 
         // 1. Create Clipping Mask for the Template
@@ -299,16 +299,16 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
         const centerX = width / 2;
         const centerY = height * 0.50;
 
-        // Determine ellipse size based on faceType
-        let radiusX = width * 0.35;
-        let radiusY = height * 0.40;
+        // Determine ellipse size - more circular like original
+        let radiusX = width * 0.28;
+        let radiusY = height * 0.45;
 
         if (faceType === 'Round / Square') {
-            radiusX = width * 0.38;
-            radiusY = height * 0.38;
+            radiusX = width * 0.32;
+            radiusY = height * 0.45;
         } else if (faceType === 'Long / Oval') {
-            radiusX = width * 0.30;
-            radiusY = height * 0.43;
+            radiusX = width * 0.25;
+            radiusY = height * 0.48;
         }
 
         ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
@@ -319,7 +319,10 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
 
         // Only draw the dark silhouette for moisture/sebum modes
         if (heatmapMode === 'moisture' || heatmapMode === 'sebum') {
-            ctx.fillStyle = '#1e293b';
+            const silhouetteGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radiusY);
+            silhouetteGrad.addColorStop(0, '#2c3e50');
+            silhouetteGrad.addColorStop(1, '#000000');
+            ctx.fillStyle = silhouetteGrad;
             ctx.fill();
         }
 
@@ -331,6 +334,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
         ctx.beginPath();
         ctx.moveTo(centerX, centerY - radiusY);
         ctx.lineTo(centerX, centerY + radiusY);
+        ctx.lineWidth = 0.5;
         ctx.stroke();
 
         // Horizontal Grid Lines
@@ -399,72 +403,74 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                             </button>
                         </div>
 
-                        <div className="w-full relative bg-[#0a0f18] rounded-[2rem] border border-white/10 mb-8 overflow-hidden shadow-2xl group mx-auto max-w-[400px] h-[500px]">
+                        <div className="w-full relative bg-[#0a0f18] rounded-[2rem] border border-white/10 mb-8 overflow-hidden shadow-2xl group mx-auto max-w-[450px] h-[340px]">
                             {landmarks ? (
-                                <div className="absolute inset-0 overflow-hidden">
-                                    {/* Diagnostic Grayscale Background - ONLY for Tone Modes */}
-                                    {(heatmapMode === 'redness' || heatmapMode === 'evenness') && (
-                                        <div
-                                            className="absolute inset-0 transition-all duration-700 pointer-events-none grayscale opacity-30 contrast-125 z-0"
-                                            style={{
-                                                backgroundImage: `url(${localStorage.getItem('lastCapturedImage') || ''})`,
-                                                backgroundSize: 'cover',
-                                                backgroundPosition: 'center'
-                                            }}
-                                        />
-                                    )}
-
-                                    <canvas
-                                        ref={canvasRef}
-                                        className="absolute inset-0 w-full h-full z-10"
-                                        width={1280}
-                                        height={1600} // Portrait-friendly resolution
-                                    />
-
-                                    {/* Floating Score Badges for Diagnostic Mode */}
-                                    {(heatmapMode === 'redness' || heatmapMode === 'evenness') && toneData && Object.entries(landmarks).map(([region, point]: [string, any]) => {
-                                        const regionData = toneData.regions[region];
-                                        if (!regionData) return null;
-
-                                        const isWarning = regionData.status === 'warning';
-                                        const isCaution = regionData.status === 'caution';
-                                        const statusText = isWarning ? t.report.statusWarning :
-                                            isCaution ? t.report.statusCaution :
-                                                t.report.statusNormal;
-
-                                        return (
+                                <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+                                    <div className="relative w-full h-full" style={{ aspectRatio: '16/9' }}>
+                                        {/* Diagnostic Grayscale Background - ONLY for Tone Modes */}
+                                        {(heatmapMode === 'redness' || heatmapMode === 'evenness') && (
                                             <div
-                                                key={`badge-${region}`}
-                                                className="absolute z-20 pointer-events-none transition-all duration-1000 animate-in fade-in zoom-in"
+                                                className="absolute inset-0 transition-all duration-700 pointer-events-none grayscale opacity-30 contrast-125 z-0"
                                                 style={{
-                                                    left: `${point.x * 100}%`,
-                                                    top: `${point.y * 100}%`,
-                                                    transform: 'translate(-50%, -120%)'
+                                                    backgroundImage: `url(${localStorage.getItem('lastCapturedImage') || ''})`,
+                                                    backgroundSize: 'cover',
+                                                    backgroundPosition: 'center'
                                                 }}
-                                            >
-                                                <div className={`px-2 py-1 rounded-lg text-[10px] font-black shadow-lg flex flex-col items-center gap-0 border leading-tight min-w-[60px]
-                                                        ${isWarning ? 'bg-red-600 border-red-400 text-white animate-pulse' :
-                                                        isCaution ? 'bg-yellow-500 border-yellow-300 text-slate-900' :
-                                                            'bg-slate-800/90 border-slate-600 text-slate-300'}`}
+                                            />
+                                        )}
+
+                                        <canvas
+                                            ref={canvasRef}
+                                            className="absolute inset-0 w-full h-full z-10"
+                                            width={1280}
+                                            height={720}
+                                        />
+
+                                        {/* Floating Score Badges for Diagnostic Mode */}
+                                        {(heatmapMode === 'redness' || heatmapMode === 'evenness') && toneData && Object.entries(landmarks).map(([region, point]: [string, any]) => {
+                                            const regionData = toneData.regions[region];
+                                            if (!regionData) return null;
+
+                                            const isWarning = regionData.status === 'warning';
+                                            const isCaution = regionData.status === 'caution';
+                                            const statusText = isWarning ? t.report.statusWarning :
+                                                isCaution ? t.report.statusCaution :
+                                                    t.report.statusNormal;
+
+                                            return (
+                                                <div
+                                                    key={`badge-${region}`}
+                                                    className="absolute z-20 pointer-events-none transition-all duration-1000 animate-in fade-in zoom-in"
+                                                    style={{
+                                                        left: `${point.x * 100}%`,
+                                                        top: `${point.y * 100}%`,
+                                                        transform: 'translate(-50%, -120%)'
+                                                    }}
                                                 >
-                                                    <div className="flex items-center gap-1">
-                                                        <span>{isWarning ? '🚨' : isCaution ? '⚠️' : '✅'}</span>
-                                                        <span className="uppercase">{statusText}</span>
-                                                    </div>
-                                                    <div className="text-[9px] opacity-80 font-mono">
-                                                        {heatmapMode === 'redness' ? `R:${Math.round(regionData.redness)}` : `L:${Math.round(regionData.l)}`}
+                                                    <div className={`px-2 py-1 rounded-lg text-[10px] font-black shadow-lg flex flex-col items-center gap-0 border leading-tight min-w-[60px]
+                                                        ${isWarning ? 'bg-red-600 border-red-400 text-white animate-pulse' :
+                                                            isCaution ? 'bg-yellow-500 border-yellow-300 text-slate-900' :
+                                                                'bg-slate-800/90 border-slate-600 text-slate-300'}`}
+                                                    >
+                                                        <div className="flex items-center gap-1">
+                                                            <span>{isWarning ? '🚨' : isCaution ? '⚠️' : '✅'}</span>
+                                                            <span className="uppercase">{statusText}</span>
+                                                        </div>
+                                                        <div className="text-[9px] opacity-80 font-mono">
+                                                            {heatmapMode === 'redness' ? `R:${Math.round(regionData.redness)}` : `L:${Math.round(regionData.l)}`}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="absolute inset-0 flex items-center justify-center bg-slate-900/50">
                                     <span className="text-[10px] text-white/20 uppercase tracking-widest">Loading...</span>
                                 </div>
                             )}
-                            <div className="absolute top-4 right-10 text-[10px] text-white/50 font-mono text-right pointer-events-none z-30">
+                            <div className="absolute top-8 right-12 text-[10px] text-white/40 font-mono text-right pointer-events-none z-30">
                                 THERMAL_ID: SC-029<br />
                                 SCAN_COMPLETED
                             </div>
