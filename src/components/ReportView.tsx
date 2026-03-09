@@ -343,7 +343,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
         // Draw Heatmap and Overlays (which will naturally be masked inside the face)
         drawOverlaysAndHeatmap();
 
-    }, [landmarks, hydrationData, faceType, heatmapMode]);
+    }, [landmarks, hydrationData, faceType, heatmapMode, toneData]);
 
     return (
         <div className="fixed inset-0 bg-[#0b121ecf] backdrop-blur-md z-50 overflow-y-auto print:static print:inset-auto print:bg-[#0b121e] print:p-0 print:overflow-visible print:block">
@@ -400,15 +400,17 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                         <div className="w-full relative bg-[#0a0f18] rounded-[2rem] border border-white/10 mb-8 overflow-hidden shadow-2xl group mx-auto max-w-[400px]">
                             {landmarks ? (
                                 <div className="relative w-full aspect-[4/5] overflow-hidden">
-                                    {/* Diagnostic Grayscale Background for Tone Modes */}
-                                    <div
-                                        className={`absolute inset-0 transition-all duration-700 pointer-events-none ${(heatmapMode === 'redness' || heatmapMode === 'evenness') ? 'grayscale opacity-30 contrast-125' : 'opacity-100'}`}
-                                        style={{
-                                            backgroundImage: `url(${localStorage.getItem('lastCapturedImage') || ''})`,
-                                            backgroundSize: 'cover',
-                                            backgroundPosition: 'center'
-                                        }}
-                                    />
+                                    {/* Diagnostic Grayscale Background - ONLY for Tone Modes */}
+                                    {(heatmapMode === 'redness' || heatmapMode === 'evenness') && (
+                                        <div
+                                            className="absolute inset-0 transition-all duration-700 pointer-events-none grayscale opacity-30 contrast-125"
+                                            style={{
+                                                backgroundImage: `url(${localStorage.getItem('lastCapturedImage') || ''})`,
+                                                backgroundSize: 'cover',
+                                                backgroundPosition: 'center'
+                                            }}
+                                        />
+                                    )}
 
                                     <canvas
                                         ref={canvasRef}
