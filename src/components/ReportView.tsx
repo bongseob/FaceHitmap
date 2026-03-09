@@ -399,13 +399,13 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                             </button>
                         </div>
 
-                        <div className="w-full relative bg-[#0a0f18] rounded-[2rem] border border-white/10 mb-8 overflow-hidden shadow-2xl group mx-auto max-w-[400px]">
+                        <div className="w-full relative bg-[#0a0f18] rounded-[2rem] border border-white/10 mb-8 overflow-hidden shadow-2xl group mx-auto max-w-[400px] h-[500px]">
                             {landmarks ? (
-                                <div className="relative w-full overflow-hidden" style={{ aspectRatio: '4/5', minHeight: '450px' }}>
+                                <div className="absolute inset-0 overflow-hidden">
                                     {/* Diagnostic Grayscale Background - ONLY for Tone Modes */}
                                     {(heatmapMode === 'redness' || heatmapMode === 'evenness') && (
                                         <div
-                                            className="absolute inset-0 transition-all duration-700 pointer-events-none grayscale opacity-30 contrast-125"
+                                            className="absolute inset-0 transition-all duration-700 pointer-events-none grayscale opacity-30 contrast-125 z-0"
                                             style={{
                                                 backgroundImage: `url(${localStorage.getItem('lastCapturedImage') || ''})`,
                                                 backgroundSize: 'cover',
@@ -460,11 +460,11 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                                     })}
                                 </div>
                             ) : (
-                                <div className="w-full flex items-center justify-center bg-slate-900/50" style={{ aspectRatio: '4/5', minHeight: '450px' }}>
-                                    <span className="text-[10px] text-white/20 uppercase tracking-widest">Loading Visualization...</span>
+                                <div className="absolute inset-0 flex items-center justify-center bg-slate-900/50">
+                                    <span className="text-[10px] text-white/20 uppercase tracking-widest">Loading...</span>
                                 </div>
                             )}
-                            <div className="absolute top-4 right-10 text-[10px] text-white/50 font-mono text-right pointer-events-none">
+                            <div className="absolute top-4 right-10 text-[10px] text-white/50 font-mono text-right pointer-events-none z-30">
                                 THERMAL_ID: SC-029<br />
                                 SCAN_COMPLETED
                             </div>
