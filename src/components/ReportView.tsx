@@ -231,7 +231,7 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
                 const { x, y } = transformPoint(point, region);
                 const value = getDataValue(region);
 
-                const radius = Math.max(radiusX, radiusY) * 0.75; // Adjusted gradient size
+                const radius = Math.max(radiusX, radiusY) * 0.95; // Increased area for better visibility
                 const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
                 grad.addColorStop(0, getColor(value, 0.6));
                 grad.addColorStop(0.6, getColor(value, 0.2));
@@ -317,12 +317,14 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
         // Draw Base Outline Graphic Background inside map
         ctx.globalCompositeOperation = 'source-over';
 
-        // Dark Base Color for the Face Form
-        ctx.fillStyle = '#1e293b';
-        ctx.fill();
+        // Only draw the dark silhouette for moisture/sebum modes
+        if (heatmapMode === 'moisture' || heatmapMode === 'sebum') {
+            ctx.fillStyle = '#1e293b';
+            ctx.fill();
+        }
 
         // Add some technical wireframe / outline accents
-        ctx.strokeStyle = '#334155';
+        ctx.strokeStyle = (heatmapMode === 'redness' || heatmapMode === 'evenness') ? 'rgba(255, 255, 255, 0.15)' : '#334155';
         ctx.lineWidth = 1;
 
         // Vertical Center Line
