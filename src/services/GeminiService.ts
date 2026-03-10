@@ -37,6 +37,7 @@ export const getAIRecommendation = async (
         const profileContext = userProfile
             ? `
             [Target User Profile]
+            - Gender: ${userProfile.gender}
             - Age: ${userProfile.age}
             - Ethnicity/Race: ${userProfile.race}
             - Climate: ${userProfile.climate}
@@ -143,7 +144,7 @@ export const getSkincareRoutine = async (
         const avgSebum = values.reduce((a, b) => a + b.sebum, 0) / values.length;
 
         const profileContext = userProfile
-            ? `Age: ${userProfile.age}, Race: ${userProfile.race}, Climate: ${userProfile.climate}, Dryness: ${userProfile.skinConcerns.dryness}/10, Sensitivity: ${userProfile.skinConcerns.sensitivity}/10, Pigmentation: ${userProfile.skinConcerns.pigmentation}/10, Primary Goal: ${userProfile.primaryConcern || 'None'}`
+            ? `Gender: ${userProfile.gender}, Age: ${userProfile.age}, Race: ${userProfile.race}, Climate: ${userProfile.climate}, Dryness: ${userProfile.skinConcerns.dryness}/10, Sensitivity: ${userProfile.skinConcerns.sensitivity}/10, Pigmentation: ${userProfile.skinConcerns.pigmentation}/10, Primary Goal: ${userProfile.primaryConcern || 'None'}`
             : "No profile data.";
 
         const prompt = `
@@ -324,7 +325,7 @@ export const getSkinAge = async (
         const avgSebum = values.reduce((a, b) => a + b.sebum, 0) / values.length;
 
         const profileContext = userProfile
-            ? `Dryness: ${userProfile.skinConcerns.dryness}/10, Sensitivity: ${userProfile.skinConcerns.sensitivity}/10, Pigmentation: ${userProfile.skinConcerns.pigmentation}/10, Climate: ${userProfile.climate}`
+            ? `Gender: ${userProfile.gender}, Dryness: ${userProfile.skinConcerns.dryness}/10, Sensitivity: ${userProfile.skinConcerns.sensitivity}/10, Pigmentation: ${userProfile.skinConcerns.pigmentation}/10, Climate: ${userProfile.climate}`
             : "";
 
         const prompt = `

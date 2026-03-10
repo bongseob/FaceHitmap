@@ -472,6 +472,14 @@ const ReportView: React.FC<ReportViewProps> = ({ landmarks, hydrationData, faceT
 
                             {userProfile && (
                                 <div className="flex flex-wrap justify-center gap-1 mt-2 mb-2">
+                                    <span className={`px-2 py-0.5 border text-[12px] rounded-full ${userProfile.gender === 'female' ? 'bg-rose-900/30 border-rose-800/50 text-rose-300' :
+                                            userProfile.gender === 'male' ? 'bg-blue-900/30 border-blue-800/50 text-blue-300' :
+                                                'bg-indigo-900/30 border-indigo-800/50 text-indigo-300'
+                                        }`}>
+                                        {userProfile.gender === 'female' ? t.survey.genderFemale :
+                                            userProfile.gender === 'male' ? t.survey.genderMale :
+                                                t.survey.genderOther}
+                                    </span>
                                     <span className="px-2 py-0.5 bg-cyan-900/30 border border-cyan-800/50 text-cyan-300 text-[12px] rounded-full">
                                         {userProfile.age}
                                     </span>
