@@ -104,8 +104,11 @@ export function analyzeSkinTone(
 
         const lab = rgbToLab(avgR, avgG, avgB);
 
-        // Redness calculation
-        const redness = Math.max(0, Math.min(100, (lab.a / 30) * 100));
+        // 홍조 계산 - 동양인 a* 기준선을 고려한 보정
+        // a* < 15는 정상, 15~35 범위에서 0~100%로 정규화
+        const baselineA = 15;
+        const adjustedA = Math.max(0, lab.a - baselineA);
+        const redness = Math.max(0, Math.min(100, (adjustedA / 20) * 100));
 
         regions[region] = {
             ...lab,
@@ -123,14 +126,14 @@ export function analyzeSkinTone(
     Object.keys(regions).forEach(region => {
         const data = regions[region];
 
-        // Relative redness deviation
+        // 상대 홍조 편차 (부위 간 비교)
         const aDev = Math.max(0, data.a - avgA);
-        const redRelScore = Math.min(100, (aDev / 15) * 100);
+        const redRelScore = Math.min(100, (aDev / 8) * 100);
 
-        // Determine status based on absolute redness and relative deviation
+        // 상태 판정: Warning은 절대 홍조 AND 상대 편차 모두 높을 때만
         let status: SkinStatus = 'normal';
-        if (data.redness > 60 || redRelScore > 70) status = 'warning';
-        else if (data.redness > 40 || redRelScore > 40) status = 'caution';
+        if (data.redness > 50 && redRelScore > 50) status = 'warning';
+        else if (data.redness > 25 || redRelScore > 60) status = 'caution';
 
         regions[region].relativeScore = Math.round(redRelScore);
         regions[region].status = status;
@@ -148,7 +151,8 @@ export function analyzeSkinTone(
     const evenness = Math.max(0, Math.min(100, 100 - (stdDevL * 5)));
 
     const averageRedness = aValues.reduce((a, b) => a + b, 0) / aValues.length;
-    const normalizedAvgRedness = Math.max(0, Math.min(100, (averageRedness / 30) * 100));
+    const baselineAFinal = 15;
+    const normalizedAvgRedness = Math.max(0, Math.min(100, ((averageRedness - baselineAFinal) / 20) * 100));
 
     return {
         regions,
